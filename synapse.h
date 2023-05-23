@@ -32,6 +32,34 @@ Synapse create_synapses(int num_synapses)
     return synaptic;
 }
 
+Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix)
+{
+    int num_syn = 0;
+    for (int i = 0; i < layer1->size; i++)
+        for (int j = 0; j < layer2->size; j++)
+            num_syn += conn_matrix[i * layer2->size + j];
+
+    Synapse synapses = create_synapses(num_syn);
+    int syn_index = 0;
+    for (int i = 0; i < layer1->size; i++)
+        for (int j = 0; j < layer2->size; j++)
+        {
+            if (conn_matrix[i * layer2->size + j] == 1)
+            {
+                synapses.pre_neuron_idx[syn_index] = layer1->id[i];
+                synapses.pre_location[syn_index] = i;
+                synapses.post_neuron_idx[syn_index] = layer2->id[j];
+
+                synapses.gain[syn_index] = 1;
+                synapses.weight[syn_index] = 1;
+                synapses.tau_syn[syn_index] = 1;
+
+                syn_index++;
+            }
+        }
+    return synapses;
+}
+
 void update_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
 {
     for (int i = 0; i < neurons->size; i++)
