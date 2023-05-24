@@ -28,6 +28,41 @@ struct Neuron
 };
 typedef struct Neuron Neuron;
 
+struct NeuronLogger
+{
+    int *step;
+    float *V; // membrane potential
+    float *I; // input current
+    int *id;
+    int counter;
+    int size;
+};
+typedef struct NeuronLogger NeuronLogger;
+
+NeuronLogger create_logger(size_t size)
+{
+    NeuronLogger logger;
+
+    logger.step = (int *)calloc(size, sizeof(float));
+    logger.V = (float *)calloc(size, sizeof(float));
+    logger.I = (float *)calloc(size, sizeof(float));
+    logger.id = (int *)calloc(size, sizeof(int));
+
+    logger.counter = 0;
+    logger.size = size;
+
+    return logger;
+}
+
+void writeNeuronLogger(char *file_name, NeuronLogger logger)
+{
+    FILE *fp = fopen(file_name, "w");
+    fprintf(fp, "Step  Id  V  I\n");
+    for (int i = 0; i < logger.counter; i++)
+        fprintf(fp, "%d  %d  %f  %f\n", logger.step[i], logger.id[i], logger.V[i], logger.I[i]);
+    fclose(fp);
+}
+
 // suppone che si chiami la initialize_neurons
 Neuron create_neurons(size_t num_neurons)
 {
@@ -85,11 +120,11 @@ Neuron create_network(Neuron layer1, Neuron layer2)
         network.id[net_id] = layer2.id[i];
         net_id++;
     }
-    
+
     return network;
 }
 
-void update_neurons(Neuron *neurons, int step, float dt)
+void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
 {
     for (int i = 0; i < neurons->size; ++i)
     {
@@ -107,6 +142,15 @@ void update_neurons(Neuron *neurons, int step, float dt)
         {
             neurons->V[i] += dt * (0.04f * V * V + 5.0f * V + 140.0f - U + I);
             neurons->U[i] += dt * neurons->a[i] * (neurons->b[i] * V - U);
+
+            if (logger != NULL)
+            {
+                logger->step[logger->counter] = step;
+                logger->V[logger->counter] = neurons->V[i];
+                logger->I[logger->counter] = neurons->I[i];
+                logger->id[logger->counter] = neurons->id[i];
+                logger->counter++;
+            }
         }
     }
 }
@@ -157,6 +201,14 @@ void free_neurons(Neuron *neurons)
     free(neurons->d);
     free(neurons->last_spike);
     free(neurons->id);
+}
+
+void free_neuron_logger(NeuronLogger *logger)
+{
+    free(logger->V);
+    free(logger->I);
+    free(logger->id);
+    free(logger->step);
 }
 
 #endif

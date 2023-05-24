@@ -25,16 +25,20 @@ int main()
     set_pre_locations(net, syn);
     visualize_synapse(syn);
 
+    NeuronLogger logger = create_logger(net.size * 10000);
     for (int i = 0; i < 10000; i++)
-        update_neurons(&net, i, 0.01);
+        update_neurons(&net, i, 0.01, &logger);
 
     for (int i = 0; i < 10000; i++)
         update_synapses(&net, &syn, i, 0.01);
+
+    writeNeuronLogger("prova.txt", logger);
 
     free_neurons(&neurons1);
     free_neurons(&neurons2);
     free_neurons(&net);
     free_synapses(&syn);
+    free_neuron_logger(&logger);
 
     return 0;
 }
