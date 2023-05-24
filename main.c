@@ -3,10 +3,15 @@
 #include "neuron.h"
 #include "synapse.h"
 #include "visualize.h"
+#include "random_utilities.h"
 // #include <gtest/gtest.h>
 
 int main()
 {
+    srand(time(NULL));
+
+    printf("Numero: %f\n", GaussianDistributionClipped(0, 1, 0, 10));
+
     int n_exc = 80;
     int n_inh = 20;
     
