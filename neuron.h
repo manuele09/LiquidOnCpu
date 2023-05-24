@@ -18,6 +18,7 @@ struct Neuron
     float *V;        // membrane potential
     float *U;        // recovery variable
     float *I;        // input current
+    float *I_bias;        // bias current
     float *a;        // parameter
     float *b;        // parameter
     float *c;        // parameter
@@ -33,6 +34,7 @@ struct NeuronLogger
     int *step;
     float *V; // membrane potential
     float *I; // input current
+    float *I_bias; // bias current
     int *id;
     int counter;
     int size;
@@ -46,6 +48,7 @@ NeuronLogger create_logger(size_t size)
     logger.step = (int *)calloc(size, sizeof(float));
     logger.V = (float *)calloc(size, sizeof(float));
     logger.I = (float *)calloc(size, sizeof(float));
+    logger.I_bias = (float *)calloc(size, sizeof(float));
     logger.id = (int *)calloc(size, sizeof(int));
 
     logger.counter = 0;
@@ -57,9 +60,9 @@ NeuronLogger create_logger(size_t size)
 void writeNeuronLogger(char *file_name, NeuronLogger logger)
 {
     FILE *fp = fopen(file_name, "w");
-    fprintf(fp, "Step  Id  V  I\n");
+    fprintf(fp, "Step  Id  V  I  I_Bias\n");
     for (int i = 0; i < logger.counter; i++)
-        fprintf(fp, "%d  %d  %f  %f\n", logger.step[i], logger.id[i], logger.V[i], logger.I[i]);
+        fprintf(fp, "%d  %d  %f  %f  %f\n", logger.step[i], logger.id[i], logger.V[i], logger.I[i], logger.I_bias[i]);
     fclose(fp);
 }
 
@@ -72,6 +75,7 @@ Neuron create_neurons(size_t num_neurons)
     neurons.V = (float *)calloc(num_neurons, sizeof(float));
     neurons.U = (float *)calloc(num_neurons, sizeof(float));
     neurons.I = (float *)calloc(num_neurons, sizeof(float));
+    neurons.I_bias = (float *)calloc(num_neurons, sizeof(float));
     neurons.a = (float *)calloc(num_neurons, sizeof(float));
     neurons.b = (float *)calloc(num_neurons, sizeof(float));
     neurons.c = (float *)calloc(num_neurons, sizeof(float));
@@ -99,6 +103,7 @@ Neuron create_network(Neuron layer1, Neuron layer2)
         network.V[net_id] = layer1.V[i];
         network.U[net_id] = layer1.U[i];
         network.I[net_id] = layer1.I[i];
+        network.I_bias[net_id] = layer1.I_bias[i];
         network.a[net_id] = layer1.a[i];
         network.b[net_id] = layer1.b[i];
         network.c[net_id] = layer1.c[i];
@@ -112,6 +117,7 @@ Neuron create_network(Neuron layer1, Neuron layer2)
         network.V[net_id] = layer2.V[i];
         network.U[net_id] = layer2.U[i];
         network.I[net_id] = layer2.I[i];
+        network.I_bias[net_id] = layer2.I_bias[i];
         network.a[net_id] = layer2.a[i];
         network.b[net_id] = layer2.b[i];
         network.c[net_id] = layer2.c[i];
@@ -131,6 +137,7 @@ void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
         float V = neurons->V[i];
         float U = neurons->U[i];
         float I = neurons->I[i];
+        float I_bias = neurons->I_bias[i];
 
         if (V >= 30.0f)
         {
@@ -140,7 +147,7 @@ void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
         }
         else
         {
-            neurons->V[i] += dt * (0.04f * V * V + 5.0f * V + 140.0f - U + I);
+            neurons->V[i] += dt * (0.04f * V * V + 5.0f * V + 140.0f - U + I + I_bias);
             neurons->U[i] += dt * neurons->a[i] * (neurons->b[i] * V - U);
 
             if (logger != NULL)
@@ -148,6 +155,7 @@ void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
                 logger->step[logger->counter] = step;
                 logger->V[logger->counter] = neurons->V[i];
                 logger->I[logger->counter] = neurons->I[i];
+                logger->I_bias[logger->counter] = neurons->I_bias[i];
                 logger->id[logger->counter] = neurons->id[i];
                 logger->counter++;
             }
@@ -195,6 +203,7 @@ void free_neurons(Neuron *neurons)
     free(neurons->V);
     free(neurons->U);
     free(neurons->I);
+    free(neurons->I_bias);
     free(neurons->a);
     free(neurons->b);
     free(neurons->c);
@@ -207,6 +216,7 @@ void free_neuron_logger(NeuronLogger *logger)
 {
     free(logger->V);
     free(logger->I);
+    free(logger->I_bias);
     free(logger->id);
     free(logger->step);
 }
