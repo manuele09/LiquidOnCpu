@@ -18,7 +18,7 @@ struct Neuron
     float *V;        // membrane potential
     float *U;        // recovery variable
     float *I;        // input current
-    float *I_bias;        // bias current
+    float *I_bias;   // bias current
     float *a;        // parameter
     float *b;        // parameter
     float *c;        // parameter
@@ -32,8 +32,8 @@ typedef struct Neuron Neuron;
 struct NeuronLogger
 {
     int *step;
-    float *V; // membrane potential
-    float *I; // input current
+    float *V;      // membrane potential
+    float *I;      // input current
     float *I_bias; // bias current
     int *id;
     int counter;
@@ -66,6 +66,40 @@ void writeNeuronLogger(char *file_name, NeuronLogger logger)
     fclose(fp);
 }
 
+/**
+ * @brief Initialize the initial potential, current, and parameters (a, b, c, d) for a range of neurons.
+ *
+ * @param neurons Pointer to the Neuron array.
+ * @param start_idx The start index of neurons to be initialized.
+ * @param end_idx The end index of neurons to be initialized. If -1, initialize all neurons starting from start_idx.
+ * @param init_v The initial value for membrane potential.
+ * @param init_I The initial value for input current.
+ * @param init_a The initial value for parameter a.
+ * @param init_b The initial value for parameter b.
+ * @param init_c The initial value for parameter c.
+ * @param init_d The initial value for parameter d.
+ */
+void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d)
+{
+    // Validate the end index
+    if (end_idx == -1 || end_idx >= neurons->size)
+    {
+        end_idx = neurons->size - 1;
+    }
+
+    // Initialize the initial potential, current, and parameters for the specified range of neurons
+    for (int i = start_idx; i <= end_idx; i++)
+    {
+        neurons->V[i] = init_v;
+        neurons->U[i] = init_u;
+        neurons->a[i] = init_a;
+        neurons->b[i] = init_b;
+        neurons->c[i] = init_c;
+        neurons->d[i] = init_d;
+        neurons->last_spike[i] = -1;
+    }
+}
+
 // suppone che si chiami la initialize_neurons
 Neuron create_neurons(size_t num_neurons)
 {
@@ -87,6 +121,7 @@ Neuron create_neurons(size_t num_neurons)
     for (int i = 0; i < num_neurons; i++)
         neurons.id[i] = global_id++;
 
+    initialize_neurons(&neurons, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
     return neurons;
 }
 
@@ -163,41 +198,7 @@ void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
     }
 }
 
-/**
- * @brief Initialize the initial potential, current, and parameters (a, b, c, d) for a range of neurons.
- *
- * @param neurons Pointer to the Neuron array.
- * @param start_idx The start index of neurons to be initialized.
- * @param end_idx The end index of neurons to be initialized. If -1, initialize all neurons starting from start_idx.
- * @param init_v The initial value for membrane potential.
- * @param init_I The initial value for input current.
- * @param init_a The initial value for parameter a.
- * @param init_b The initial value for parameter b.
- * @param init_c The initial value for parameter c.
- * @param init_d The initial value for parameter d.
- */
-void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d)
-{
-    // Validate the end index
-    if (end_idx == -1 || end_idx >= neurons->size)
-    {
-        end_idx = neurons->size - 1;
-    }
-
-    // Initialize the initial potential, current, and parameters for the specified range of neurons
-    for (int i = start_idx; i <= end_idx; i++)
-    {
-        neurons->V[i] = init_v;
-        neurons->U[i] = init_u;
-        neurons->a[i] = init_a;
-        neurons->b[i] = init_b;
-        neurons->c[i] = init_c;
-        neurons->d[i] = init_d;
-        neurons->last_spike[i] = -1;
-    }
-}
-
-void set_input(Neuron neuron, int* currents)
+void set_input(Neuron neuron, int *currents)
 {
     for (int i = 0; i < neuron.size; i++)
         neuron.I_bias[i] = currents[i];

@@ -7,41 +7,45 @@
 
 int main()
 {
-    Neuron neurons1 = create_neurons(5);
-    Neuron neurons2 = create_neurons(5);
+    //Alloco i Neuroni
+    Neuron layer1 = create_neurons(5);
+    Neuron layer2 = create_neurons(5);
+    Neuron net = create_network(layer1, layer2);
+    //visualize_neuron_layer(net);
 
-    initialize_neurons(&neurons1, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
-    initialize_neurons(&neurons2, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
-
-    Neuron net = create_network(neurons1, neurons2);
-    visualize_neuron_layer(net);
-
+    //Definisco la Connettività
+    int *conn_mat = malloc(sizeof(int) * layer1.size * layer2.size);
+    for (int i = 0; i < layer1.size; i++)
+        for (int j = 0; j < layer2.size; j++)
+            conn_mat[i * layer2.size + j] = 1;
+    
+    //Alloco le Sinapsi
+    Synapse syn = connect(&layer1, &layer2, conn_mat);
+    set_pre_locations(net, syn);
+    //visualize_synapse(syn);
+    
+    //Imposto le correnti di input
     int *input = malloc(sizeof(int) * net.size);
     for (int i = 0; i < net.size; i++)
         input[i] = 56;
-
     set_input(net, input);
 
-    int *conn_mat = malloc(sizeof(int) * neurons1.size * neurons2.size);
-    for (int i = 0; i < neurons1.size; i++)
-        for (int j = 0; j < neurons2.size; j++)
-            conn_mat[i * neurons2.size + j] = 1;
-
-    Synapse syn = connect(&neurons1, &neurons2, conn_mat);
-    set_pre_locations(net, syn);
-    visualize_synapse(syn);
-
+    //creo il logger
     NeuronLogger logger = create_logger(net.size * 10000);
+
+    //simulo
     for (int i = 0; i < 10000; i++)
+    {
         update_neurons(&net, i, 0.01, &logger);
-
-    for (int i = 0; i < 10000; i++)
         update_synapses(&net, &syn, i, 0.01);
+    }
 
+    //Salvo su file
     writeNeuronLogger("prova.txt", logger);
 
-    free_neurons(&neurons1);
-    free_neurons(&neurons2);
+    //Libero la memoria 
+    free_neurons(&layer1);
+    free_neurons(&layer2);
     free_neurons(&net);
     free_synapses(&syn);
     free_neuron_logger(&logger);
