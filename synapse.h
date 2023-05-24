@@ -23,9 +23,9 @@ Synapse create_synapses(int num_synapses)
     synaptic.pre_neuron_idx = (int *)calloc(num_synapses, sizeof(int));
     synaptic.pre_location = (int *)calloc(num_synapses, sizeof(int));
     synaptic.post_neuron_idx = (int *)calloc(num_synapses, sizeof(int));
-    synaptic.weight = (float *)calloc(num_synapses, sizeof(int));
-    synaptic.gain = (float *)calloc(num_synapses, sizeof(int));
-    synaptic.tau_syn = (float *)calloc(num_synapses, sizeof(int));
+    synaptic.weight = (float *)calloc(num_synapses, sizeof(float));
+    synaptic.gain = (float *)calloc(num_synapses, sizeof(float));
+    synaptic.tau_syn = (float *)calloc(num_synapses, sizeof(float));
 
     synaptic.num_synapses = num_synapses;
 

@@ -2,7 +2,6 @@ main
 main.o
 neuron_log.csv
 neurons_log.csv
-visualize.h
 .vscode/c_cpp_properties.json
 Matlab Scripts/plot_neuron_data.m
 .vscode/settings.json
