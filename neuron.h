@@ -13,7 +13,6 @@
 //  il contributo in corrente da parte di ciascun neurone presinaptico, perchè un nuerone può
 //  spikare, altri no.
 
-
 struct Neuron
 {
     float *V;        // membrane potential
@@ -46,10 +45,48 @@ Neuron create_neurons(size_t num_neurons)
     neurons.id = (int *)calloc(num_neurons, sizeof(int));
     neurons.size = num_neurons;
 
-    for(int i = 0; i < num_neurons; i++)
+    for (int i = 0; i < num_neurons; i++)
         neurons.id[i] = global_id++;
 
     return neurons;
+}
+
+Neuron create_network(Neuron layer1, Neuron layer2)
+{
+    int total_n = layer1.size + layer2.size;
+    Neuron network;
+
+    network = create_neurons(total_n);
+
+    int net_id = 0;
+    for (int i = 0; i < layer1.size; i++)
+    {
+        network.V[net_id] = layer1.V[i];
+        network.U[net_id] = layer1.U[i];
+        network.I[net_id] = layer1.I[i];
+        network.a[net_id] = layer1.a[i];
+        network.b[net_id] = layer1.b[i];
+        network.c[net_id] = layer1.c[i];
+        network.d[net_id] = layer1.d[i];
+        network.last_spike[net_id] = layer1.last_spike[i];
+        network.id[net_id] = layer1.id[i];
+        net_id++;
+    }
+    for (int i = 0; i < layer2.size; i++)
+    {
+        network.V[net_id] = layer2.V[i];
+        network.U[net_id] = layer2.U[i];
+        network.I[net_id] = layer2.I[i];
+        network.a[net_id] = layer2.a[i];
+        network.b[net_id] = layer2.b[i];
+        network.c[net_id] = layer2.c[i];
+        network.d[net_id] = layer2.d[i];
+        network.last_spike[net_id] = layer2.last_spike[i];
+        network.id[net_id] = layer2.id[i];
+        net_id++;
+    }
+    
+    return network;
 }
 
 void update_neurons(Neuron *neurons, int step, float dt)
