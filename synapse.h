@@ -60,6 +60,21 @@ Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix)
     return synapses;
 }
 
+void set_pre_locations(Neuron neurons, Synapse synpase)
+{
+    for (int i = 0; i < synpase.num_synapses; i++)
+    {
+        for (int j = 0; j < neurons.size; j++)
+        {
+            if (neurons.id[j] == synpase.pre_neuron_idx[i])
+            {
+                synpase.pre_location[i] = j;
+                break;
+            }
+        }
+    }
+}
+
 void update_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
 {
     for (int i = 0; i < neurons->size; i++)
