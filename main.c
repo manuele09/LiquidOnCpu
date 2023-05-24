@@ -7,6 +7,9 @@
 
 int main()
 {
+    int n_exc = 80;
+    int n_inh = 20;
+    
     //Alloco i Neuroni
     Neuron layer1 = create_neurons(5);
     Neuron layer2 = create_neurons(5);
