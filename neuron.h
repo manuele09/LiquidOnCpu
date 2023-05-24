@@ -176,7 +176,7 @@ void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
  * @param init_c The initial value for parameter c.
  * @param init_d The initial value for parameter d.
  */
-void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_I, float init_a, float init_b, float init_c, float init_d)
+void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d)
 {
     // Validate the end index
     if (end_idx == -1 || end_idx >= neurons->size)
@@ -189,13 +189,18 @@ void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_
     {
         neurons->V[i] = init_v;
         neurons->U[i] = init_u;
-        neurons->I[i] = init_I;
         neurons->a[i] = init_a;
         neurons->b[i] = init_b;
         neurons->c[i] = init_c;
         neurons->d[i] = init_d;
         neurons->last_spike[i] = -1;
     }
+}
+
+void set_input(Neuron neuron, int* currents)
+{
+    for (int i = 0; i < neuron.size; i++)
+        neuron.I_bias[i] = currents[i];
 }
 
 void free_neurons(Neuron *neurons)

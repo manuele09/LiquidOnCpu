@@ -10,12 +10,18 @@ int main()
     Neuron neurons1 = create_neurons(5);
     Neuron neurons2 = create_neurons(5);
 
+    initialize_neurons(&neurons1, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
+    initialize_neurons(&neurons2, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
 
-    initialize_neurons(&neurons1, 0, -1, -65.0f, -30.0f, 40.0f, 0.02f, 0.2f, -65.0f, 8.0f);
-    initialize_neurons(&neurons2, 0, -1, -65.0f, -30.0f, 40.0f, 0.02f, 0.2f, -65.0f, 8.0f);
     Neuron net = create_network(neurons1, neurons2);
     visualize_neuron_layer(net);
-    
+
+    int *input = malloc(sizeof(int) * net.size);
+    for (int i = 0; i < net.size; i++)
+        input[i] = 56;
+
+    set_input(net, input);
+
     int *conn_mat = malloc(sizeof(int) * neurons1.size * neurons2.size);
     for (int i = 0; i < neurons1.size; i++)
         for (int j = 0; j < neurons2.size; j++)
