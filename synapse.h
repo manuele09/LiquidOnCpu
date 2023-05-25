@@ -94,6 +94,39 @@ void simulate_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
     }
 }
 
+//Presuppone che dopo si chiami la set_pre_locations
+Synapse create_network_syn(Synapse syn1, Synapse syn2)
+{
+    int total_s = syn1.num_synapses + syn2.num_synapses;
+    Synapse syn_net;
+
+    syn_net = create_synapses(total_s);
+
+    int net_id = 0;
+    for (int i = 0; i < syn1.num_synapses; i++)
+    {
+        syn_net.pre_neuron_idx[net_id] = syn1.pre_neuron_idx[i];
+        syn_net.post_neuron_idx[net_id] = syn1.post_neuron_idx[i];
+        syn_net.weight[net_id] = syn1.weight[i];
+        syn_net.gain[net_id] = syn1.gain[i];
+        syn_net.tau_syn[net_id] = syn1.tau_syn[i];
+        syn_net.delay[net_id] = syn1.delay[i];
+        net_id++;
+    }
+    for (int i = 0; i < syn2.num_synapses; i++)
+    {
+        syn_net.pre_neuron_idx[net_id] = syn2.pre_neuron_idx[i];
+        syn_net.post_neuron_idx[net_id] = syn2.post_neuron_idx[i];
+        syn_net.weight[net_id] = syn2.weight[i];
+        syn_net.gain[net_id] = syn2.gain[i];
+        syn_net.tau_syn[net_id] = syn2.tau_syn[i];
+        syn_net.delay[net_id] = syn2.delay[i];
+        net_id++;
+    }
+
+    return syn_net;
+}
+
 void free_synapses(Synapse *synaptic)
 {
     free(synaptic->pre_neuron_idx);

@@ -75,6 +75,13 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
 
     liquid.all_neurons = create_network(liquid.exc_neurons, liquid.inh_neurons);
 
+    Synapse temp1 = create_network_syn(liquid.ee_synapses, liquid.ei_synapses);
+    Synapse temp2 = create_network_syn(temp1, liquid.ii_synapses);
+    liquid.all_synapses = create_network_syn(temp2, liquid.ie_synapses);
+
+    free_synapses(&temp1);
+    free_synapses(&temp2);
+
     return liquid;
 }
 
