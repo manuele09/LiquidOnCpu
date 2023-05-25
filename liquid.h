@@ -63,6 +63,19 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
     liquid.exc_neurons = create_neurons(n_exc);
     liquid.inh_neurons = create_neurons(n_inh);
 
+    liquid.all_neurons = create_network(liquid.exc_neurons, liquid.inh_neurons);
+    
+    for (int i = 0; i < liquid.all_neurons.size; i++)
+    {
+        liquid.all_neurons.I_bias[i] = 0; // 32
+        liquid.all_neurons.a[i] = 0.02;
+        liquid.all_neurons.b[i] = 0.2;
+        liquid.all_neurons.c[i] = -60;
+        liquid.all_neurons.d[i] = 2;
+        liquid.all_neurons.V[i] = -60;
+        liquid.all_neurons.U[i] = 6;
+    }
+
     liquid.ee_synapses = create_synapses(n_exc * n_ee);
     liquid.ei_synapses = create_synapses(n_inh * n_ei);
     liquid.ii_synapses = create_synapses(n_inh * n_ii);
@@ -73,16 +86,30 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
     connect_liquid(liquid.ii_synapses, liquid.inh_neurons, liquid.inh_neurons, n_ii, 10 * (-20), dt);
     connect_liquid(liquid.ie_synapses, liquid.inh_neurons, liquid.exc_neurons, n_ie, 10 * (-20), dt);
 
-    liquid.all_neurons = create_network(liquid.exc_neurons, liquid.inh_neurons);
 
     Synapse temp1 = create_network_syn(liquid.ee_synapses, liquid.ei_synapses);
     Synapse temp2 = create_network_syn(temp1, liquid.ii_synapses);
     liquid.all_synapses = create_network_syn(temp2, liquid.ie_synapses);
 
+    set_pre_locations(liquid.all_neurons, liquid.all_synapses);
+
     free_synapses(&temp1);
     free_synapses(&temp2);
 
     return liquid;
+}
+
+void simulate_liquid(Liquid liquid, int steps)
+{
+    NeuronLogger logger = create_logger(liquid.all_neurons.size * steps);
+    for (int s = 0; s < steps; s++)
+    {
+        simulate_neurons(&liquid.all_neurons, s, liquid.dt, &logger);
+        simulate_synapses(&liquid.all_neurons, &liquid.all_synapses, s, liquid.dt);
+    }
+    
+    writeNeuronLogger("logs/liquid_neurons.txt", logger);
+    free_neuron_logger(&logger);
 }
 
 void free_liquid(Liquid liquid)
