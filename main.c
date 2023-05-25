@@ -12,9 +12,8 @@ int main()
     srand(time(NULL));
 
     Liquid liquid = create_liquid(0.1, 100, 80, 2, 2, 1, 1);
-    visualize_synapse(liquid.ei_synapses);
 
-
+    free_liquid(liquid);
     
     // //creo il logger
     // NeuronLogger logger = create_logger(net.size * 10000);

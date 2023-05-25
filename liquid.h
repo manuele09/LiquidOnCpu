@@ -73,7 +73,22 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
     connect_liquid(liquid.ii_synapses, liquid.inh_neurons, liquid.inh_neurons, n_ii, 10 * (-20), dt);
     connect_liquid(liquid.ie_synapses, liquid.inh_neurons, liquid.exc_neurons, n_ie, 10 * (-20), dt);
 
+    liquid.all_neurons = create_network(liquid.exc_neurons, liquid.inh_neurons);
+
     return liquid;
+}
+
+void free_liquid(Liquid liquid)
+{
+    free_neurons(&liquid.all_neurons);
+    free_neurons(&liquid.exc_neurons);
+    free_neurons(&liquid.inh_neurons);
+
+    free_synapses(&liquid.all_synapses);
+    free_synapses(&liquid.ee_synapses);
+    free_synapses(&liquid.ei_synapses);
+    free_synapses(&liquid.ii_synapses);
+    free_synapses(&liquid.ie_synapses);
 }
 
 #endif
