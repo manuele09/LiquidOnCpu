@@ -165,7 +165,7 @@ Neuron create_network(Neuron layer1, Neuron layer2)
     return network;
 }
 
-void update_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
+void simulate_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
 {
     for (int i = 0; i < neurons->size; ++i)
     {

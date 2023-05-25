@@ -13,6 +13,7 @@ struct Synapse
     float *weight;
     float *gain;
     float *tau_syn;
+    float *delay;
     int num_synapses;
 } Synaptic;
 typedef struct Synapse Synapse;
@@ -26,6 +27,7 @@ Synapse create_synapses(int num_synapses)
     synaptic.weight = (float *)calloc(num_synapses, sizeof(float));
     synaptic.gain = (float *)calloc(num_synapses, sizeof(float));
     synaptic.tau_syn = (float *)calloc(num_synapses, sizeof(float));
+    synaptic.delay = (float *)calloc(num_synapses, sizeof(float));
 
     synaptic.num_synapses = num_synapses;
 
@@ -53,6 +55,7 @@ Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix)
                 synapses.gain[syn_index] = 1;
                 synapses.weight[syn_index] = 1;
                 synapses.tau_syn[syn_index] = 1;
+                synapses.delay[syn_index] = 0;
 
                 syn_index++;
             }
@@ -75,7 +78,7 @@ void set_pre_locations(Neuron neurons, Synapse synpase)
     }
 }
 
-void update_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
+void simulate_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
 {
     for (int i = 0; i < neurons->size; i++)
     {
@@ -85,7 +88,7 @@ void update_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
         {
             int last_spike = neurons->last_spike[synapses->pre_location[j]];
 
-            I_syn += synapses->weight[j] * exp(-(step - last_spike) * dt / synapses->tau_syn[j]);
+            I_syn += synapses->weight[j] * exp(-(step - last_spike + synapses->delay[j]) * dt / synapses->tau_syn[j]);
         }
         neurons->I[i] = I_syn;
     }
@@ -99,6 +102,7 @@ void free_synapses(Synapse *synaptic)
     free(synaptic->weight);
     free(synaptic->gain);
     free(synaptic->tau_syn);
+    free(synaptic->delay);
 }
 
 #endif

@@ -22,7 +22,7 @@ void visualize_synapse(Synapse syn)
     for (int i = 0; i < syn.num_synapses; i++)
     {
         printf("Pre: %d, Post: %d\n", syn.pre_neuron_idx[i], syn.post_neuron_idx[i]);
-        printf("W: %f, G: %f, Tau: %f\n", syn.weight[i], syn.gain[i], syn.tau_syn[i]);
+        printf("W: %f, G: %f, Tau: %f, Delay: %f\n", syn.weight[i], syn.gain[i], syn.tau_syn[i], syn.delay[i]);
         printf("\n\n");
     }
 }
