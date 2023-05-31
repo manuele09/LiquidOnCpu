@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include "neuron.h"
+// #define MAX_SPIKE_TIMES 50
+//  considerando la simulazione delle sinapsi, è possible usare un approccio
+//  event driven: se un determinato neurone non emmette spike, invece di calcoare
+//  il contributo in corrente degli spike passati, basta moltiplicare il valore vecchio
+//  per una costante (e^-dt). Questo presuppone che si conservi in memoria in locazioni distinte
+//  il contributo in corrente da parte di ciascun neurone presinaptico, perchè un nuerone può
+//  spikare, altri no.
 
 struct Synapse
 {
@@ -15,127 +22,61 @@ struct Synapse
     float *tau_syn;
     float *delay;
     int num_synapses;
-} Synaptic;
+};
 typedef struct Synapse Synapse;
 
-Synapse create_synapses(int num_synapses)
-{
-    Synapse synaptic;
-    synaptic.pre_neuron_idx = (int *)calloc(num_synapses, sizeof(int));
-    synaptic.pre_location = (int *)calloc(num_synapses, sizeof(int));
-    synaptic.post_neuron_idx = (int *)calloc(num_synapses, sizeof(int));
-    synaptic.weight = (float *)calloc(num_synapses, sizeof(float));
-    synaptic.gain = (float *)calloc(num_synapses, sizeof(float));
-    synaptic.tau_syn = (float *)calloc(num_synapses, sizeof(float));
-    synaptic.delay = (float *)calloc(num_synapses, sizeof(float));
+/**
+ * @brief Create a synapses object.
+ * 
+ * @param num_synapses 
+ * @return Synapse 
+ */
+Synapse create_synapses(int num_synapses);
 
-    synaptic.num_synapses = num_synapses;
+/**
+ * @brief Connect two layers of neurons. The parameters of the synapse are set to default values:
+ * gain = 1, weight = 1, tau_syn = 1, delay = 0. 
+ * 
+ * @param layer1 
+ * @param layer2 
+ * @param conn_matrix // Matrix of connections between neurons of layer1 and layer2
+ * @return Synapse 
+ */
+Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix);
 
-    return synaptic;
-}
+/**
+ * @brief Set the pre locations object. This function is used to set the index of the presynaptic neuron,
+ * relative to the array of neurons, in the array of synapse.
+ * 
+ * @param neurons 
+ * @param synpase 
+ */
+void set_pre_locations(Neuron neurons, Synapse synpase);
 
-Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix)
-{
-    int num_syn = 0;
-    for (int i = 0; i < layer1->size; i++)
-        for (int j = 0; j < layer2->size; j++)
-            num_syn += conn_matrix[i * layer2->size + j];
+/**
+ * @brief Simulate the synapses (only one step).
+ * 
+ * @param neurons 
+ * @param synapses 
+ * @param step 
+ * @param dt 
+ */
+void simulate_synapses(Neuron *neurons, Synapse *synapses, int step, float dt);
 
-    Synapse synapses = create_synapses(num_syn);
-    int syn_index = 0;
-    for (int i = 0; i < layer1->size; i++)
-        for (int j = 0; j < layer2->size; j++)
-        {
-            if (conn_matrix[i * layer2->size + j] == 1)
-            {
-                synapses.pre_neuron_idx[syn_index] = layer1->id[i];
-                synapses.pre_location[syn_index] = i;
-                synapses.post_neuron_idx[syn_index] = layer2->id[j];
+/**
+ * @brief Create a network syn object. This function is used to create a synapse object that contains
+ * the two synapses layers.
+ * 
+ * @param syn1 
+ * @param syn2 
+ * @return Synapse 
+ */
+Synapse create_network_syn(Synapse syn1, Synapse syn2);
 
-                synapses.gain[syn_index] = 1;
-                synapses.weight[syn_index] = 1;
-                synapses.tau_syn[syn_index] = 1;
-                synapses.delay[syn_index] = 0;
-
-                syn_index++;
-            }
-        }
-    return synapses;
-}
-
-void set_pre_locations(Neuron neurons, Synapse synpase)
-{
-    for (int i = 0; i < synpase.num_synapses; i++)
-    {
-        for (int j = 0; j < neurons.size; j++)
-        {
-            if (neurons.id[j] == synpase.pre_neuron_idx[i])
-            {
-                synpase.pre_location[i] = j;
-                break;
-            }
-        }
-    }
-}
-
-void simulate_synapses(Neuron *neurons, Synapse *synapses, int step, float dt)
-{
-    for (int i = 0; i < neurons->size; i++)
-    {
-        float I_syn = 0.0f;
-
-        for (int j = 0; j < synapses->num_synapses; j++)
-        {
-            int last_spike = neurons->last_spike[synapses->pre_location[j]];
-
-            I_syn += synapses->weight[j] * exp(-(step - last_spike + synapses->delay[j]) * dt / synapses->tau_syn[j]);
-        }
-        neurons->I[i] = I_syn;
-    }
-}
-
-//Presuppone che dopo si chiami la set_pre_locations
-Synapse create_network_syn(Synapse syn1, Synapse syn2)
-{
-    int total_s = syn1.num_synapses + syn2.num_synapses;
-    Synapse syn_net;
-
-    syn_net = create_synapses(total_s);
-
-    int net_id = 0;
-    for (int i = 0; i < syn1.num_synapses; i++)
-    {
-        syn_net.pre_neuron_idx[net_id] = syn1.pre_neuron_idx[i];
-        syn_net.post_neuron_idx[net_id] = syn1.post_neuron_idx[i];
-        syn_net.weight[net_id] = syn1.weight[i];
-        syn_net.gain[net_id] = syn1.gain[i];
-        syn_net.tau_syn[net_id] = syn1.tau_syn[i];
-        syn_net.delay[net_id] = syn1.delay[i];
-        net_id++;
-    }
-    for (int i = 0; i < syn2.num_synapses; i++)
-    {
-        syn_net.pre_neuron_idx[net_id] = syn2.pre_neuron_idx[i];
-        syn_net.post_neuron_idx[net_id] = syn2.post_neuron_idx[i];
-        syn_net.weight[net_id] = syn2.weight[i];
-        syn_net.gain[net_id] = syn2.gain[i];
-        syn_net.tau_syn[net_id] = syn2.tau_syn[i];
-        syn_net.delay[net_id] = syn2.delay[i];
-        net_id++;
-    }
-
-    return syn_net;
-}
-
-void free_synapses(Synapse *synaptic)
-{
-    free(synaptic->pre_neuron_idx);
-    free(synaptic->pre_location);
-    free(synaptic->post_neuron_idx);
-    free(synaptic->weight);
-    free(synaptic->gain);
-    free(synaptic->tau_syn);
-    free(synaptic->delay);
-}
-
+/**
+ * @brief Free the memory allocated for the synapses.   
+ * 
+ * @param synaptic 
+ */
+void free_synapses(Synapse *synaptic);
 #endif

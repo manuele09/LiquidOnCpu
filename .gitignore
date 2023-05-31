@@ -1,5 +1,4 @@
 main
-main.o
 neuron_log.csv
 neurons_log.csv
 .vscode/c_cpp_properties.json
@@ -7,3 +6,4 @@ neurons_log.csv
 .vscode/launch.json
 prova.txt
 liquid_neurons.txt
+*.o
