@@ -1,10 +1,5 @@
-#ifndef _RANDOM_UTILITIES_H
-#define _RANDOM_UTILITIES_H 1
+#include "random_utilities.h"
 
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <stdio.h>
 
 float GaussianDistribution(float mu, float sigma)
 {
@@ -40,4 +35,3 @@ float GaussianDistributionClipped(float mu, float sigma, float minValue, float m
     return randNormal;
 }
 
-#endif

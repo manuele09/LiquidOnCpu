@@ -19,7 +19,7 @@ struct Synapse
     int *post_neuron_idx;
     float *weight;
     float *gain;
-    float *tau_syn;
+    float *tau_syn; //questi parametri dovrebbero essere espressi in ms
     float *delay;
     int num_synapses;
 };

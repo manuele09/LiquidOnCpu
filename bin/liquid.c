@@ -1,30 +1,8 @@
-#ifndef _LIQUID_H
-#define _LIQUID_H 1
+#include "liquid.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "neuron.h"
-#include "synapse.h"
-#include "random_utilities.h"
-
-struct Liquid
+Synapse connect_liquid(Neuron layer1, Neuron layer2, int indegree, double J, float dt)
 {
-    float dt;
-    Neuron exc_neurons;
-    Neuron inh_neurons;
-    Neuron all_neurons;
-
-    Synapse ee_synapses;
-    Synapse ei_synapses;
-    Synapse ii_synapses;
-    Synapse ie_synapses;
-    Synapse all_synapses;
-};
-typedef struct Liquid Liquid;
-
-void connect_liquid(Synapse syn, Neuron layer1, Neuron layer2, int indegree, double J, float dt)
-{
+    Synapse syn = create_synapses(layer2.size * indegree);
     double delay = GaussianDistributionClipped(10, 20, 3, 200);
     double w, tau;
     if (J >= 0)
@@ -53,6 +31,7 @@ void connect_liquid(Synapse syn, Neuron layer1, Neuron layer2, int indegree, dou
             counter++;
         }
     }
+    return syn;
 }
 
 Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie)
@@ -64,7 +43,7 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
     liquid.inh_neurons = create_neurons(n_inh);
 
     liquid.all_neurons = create_network(liquid.exc_neurons, liquid.inh_neurons);
-    
+
     for (int i = 0; i < liquid.all_neurons.size; i++)
     {
         liquid.all_neurons.I_bias[i] = 0; // 32
@@ -76,16 +55,14 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
         liquid.all_neurons.U[i] = 6;
     }
 
-    liquid.ee_synapses = create_synapses(n_exc * n_ee);
-    liquid.ei_synapses = create_synapses(n_inh * n_ei);
-    liquid.ii_synapses = create_synapses(n_inh * n_ii);
-    liquid.ie_synapses = create_synapses(n_exc * n_ie);
+    liquid.ee_synapses = connect_liquid(liquid.exc_neurons, liquid.exc_neurons, n_ee, 10 * 5, dt);
+    liquid.ei_synapses = connect_liquid(liquid.exc_neurons, liquid.inh_neurons, n_ei, 10 * 25, dt);
 
-    connect_liquid(liquid.ee_synapses, liquid.exc_neurons, liquid.exc_neurons, n_ee, 10 * 5, dt);
-    connect_liquid(liquid.ei_synapses, liquid.exc_neurons, liquid.inh_neurons, n_ei, 10 * 25, dt);
-    connect_liquid(liquid.ii_synapses, liquid.inh_neurons, liquid.inh_neurons, n_ii, 10 * (-20), dt);
-    connect_liquid(liquid.ie_synapses, liquid.inh_neurons, liquid.exc_neurons, n_ie, 10 * (-20), dt);
+    liquid.ii_synapses = connect_liquid(liquid.inh_neurons, liquid.inh_neurons, n_ii, 10 * (-20), dt);
+    liquid.ie_synapses = connect_liquid(liquid.inh_neurons, liquid.exc_neurons, n_ie, 10 * (-20), dt);
 
+    
+    
 
     Synapse temp1 = create_network_syn(liquid.ee_synapses, liquid.ei_synapses);
     Synapse temp2 = create_network_syn(temp1, liquid.ii_synapses);
@@ -107,7 +84,7 @@ void simulate_liquid(Liquid liquid, int steps)
         simulate_neurons(&liquid.all_neurons, s, liquid.dt, &logger);
         simulate_synapses(&liquid.all_neurons, &liquid.all_synapses, s, liquid.dt);
     }
-    
+
     writeNeuronLogger("logs/liquid_neurons.txt", logger);
     free_neuron_logger(&logger);
 }
@@ -124,5 +101,3 @@ void free_liquid(Liquid liquid)
     free_synapses(&liquid.ii_synapses);
     free_synapses(&liquid.ie_synapses);
 }
-
-#endif

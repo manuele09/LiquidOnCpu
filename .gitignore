@@ -1,9 +1,5 @@
 main
-neuron_log.csv
-neurons_log.csv
-.vscode/c_cpp_properties.json
-.vscode/settings.json
-.vscode/launch.json
-prova.txt
-liquid_neurons.txt
+*.csv
+*.json
+*.txt
 *.o

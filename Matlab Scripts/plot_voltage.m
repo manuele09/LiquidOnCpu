@@ -17,12 +17,14 @@ function plot_voltage(log_file, x, y)
         neuron_data = data(data.Id == neuron_id, :);
 
 
-        % Create a subplot for membrane potential
+        % Create a subplot for membrane potential 
         subplot(x, y, sub_plot_pos);
         plot(steps, neuron_data.V);
         title(sprintf('Neuron %d', neuron_id));
         xlabel('Step');
         ylabel('Potential (mV)');
         sub_plot_pos = sub_plot_pos + 1;
+
+    
     end
 end
