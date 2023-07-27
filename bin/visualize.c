@@ -28,13 +28,13 @@ void visualize_synapse(Synapse *syn)
 
     // Print column headers
     printf("--------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    printf("%-27s | %-10s | %-11s | %-12s | %-14s | %-7s | %-5s | %-8s | %-6s\n",
+    printf("%-27s | %-10s | %-11s | %-12s | %-14s | %-8s | %-8s | %-8s | %-8s\n",
            "Synapse id (of provenance)", "Pre Index", "Post Index", "Pre Location", "Post Location", "Weight", "Gain", "Tau_syn", "Delay");
     printf("--------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < syn->n_synapses; i++)
     {
-        printf("%-27d | %-10d | %-11d | %-12d | %-14d | %-7f | %-5f | %-8f | %-6f\n",
+        printf("%-27d | %-10d | %-11d | %-12d | %-14d | %-8f | %-8f | %-8f | %-8f\n",
                syn->synapse_id[i], syn->pre_neuron_idx[i], syn->post_neuron_idx[i], syn->pre_location[i], syn->post_location[i], syn->weight[i], syn->gain[i], syn->tau_syn[i], syn->delay[i]);
     }
     printf("\n\n");

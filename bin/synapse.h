@@ -5,6 +5,10 @@
 #include <math.h>
 #include "neuron.h"
 
+#define WEIGHT 1
+#define GAIN 20
+#define TAU_SYN 3
+#define DELAY 0
 
 /**
  * @brief The structure contains the synapses that connects two layers.
@@ -93,4 +97,7 @@ Synapse *combine_synapses(Synapse **synapse, int num_synapse);
  * @param synaptic 
  */
 void free_synapses(Synapse *synaptic);
+
+void save_connectivity(Synapse *synapses, char *filename);
+
 #endif

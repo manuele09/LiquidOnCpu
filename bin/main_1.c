@@ -8,8 +8,6 @@
 
 int main()
 {
-    // srand(time(NULL));
-
     //create the neurons
     Layer *layer1 = create_neurons(10, true);
     // visualize_neuron_layer(layer1);
@@ -55,7 +53,10 @@ int main()
 
     }
     writeNeuronLogger("../logs/prova_log.txt", logger);
+    save_connectivity(synapses, "../logs/conn.txt");
 
+    //Prossimo passo: aggiustare i parametri.
+    //Fare la prova con due neuroni
 
     return 0;
 }

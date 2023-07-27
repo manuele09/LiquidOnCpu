@@ -54,10 +54,10 @@ Synapse *connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix)
                 synapses->post_neuron_idx[syn_index] = post_layer->id[j];
 
                 // Set the default values of the synapse
-                synapses->gain[syn_index] = 1;
-                synapses->weight[syn_index] = 1;
-                synapses->tau_syn[syn_index] = 1;
-                synapses->delay[syn_index] = 0;
+                synapses->gain[syn_index] = GAIN;
+                synapses->weight[syn_index] = WEIGHT;
+                synapses->tau_syn[syn_index] = TAU_SYN;
+                synapses->delay[syn_index] = DELAY;
 
                 syn_index++;
             }
@@ -115,12 +115,10 @@ void simulate_synapses(Synapse *synapses, float dt)
                 continue;
             int last_spike = neurons->last_spike[synapses->pre_location[j]];
 
-            // printf("Step: %d\n", step);
-            // printf("Neuron %d, Spike: %d\n", i, last_spike);
-            I_syn += synapses->weight[j] * exp(-(step - last_spike + synapses->delay[j]) * dt / synapses->tau_syn[j]);
+            double t = (step - last_spike + synapses->delay[j]) * dt;
+            I_syn += synapses->gain[j] * synapses->weight[j] * (t / synapses->tau_syn[j]) * exp(1 - t / synapses->tau_syn[j]);
         }
         neurons->I[i] = I_syn;
-        printf("%d %f\n",i, I_syn);
     }
 }
 
@@ -151,7 +149,6 @@ Synapse *combine_synapses(Synapse **synapse, int num_synapse)
         free(synapse[l]);
     }
 
-
     return syn_net;
 }
 
@@ -167,4 +164,21 @@ void free_synapses(Synapse *synaptic)
     free(synaptic->gain);
     free(synaptic->tau_syn);
     free(synaptic->delay);
+}
+
+
+void save_connectivity(Synapse *synapses, char *filename)
+{
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL)
+    {
+        printf("Error: cannot open file %s\n", filename);
+        exit(1);
+    }
+    
+    fprintf(fp, "Pre_idx Post_idx Pre_layer Post_layer Weight Gain Tau_syn Delay\n");
+    for (int i = 0; i < synapses->n_synapses; i++)
+        fprintf(fp, "%d %d %d %d %f %f %f %f\n", synapses->pre_neuron_idx[i], synapses->post_neuron_idx[i], synapses->layer->neuron_layer_id[synapses->pre_location[i]], synapses->layer->neuron_layer_id[synapses->post_location[i]], synapses->weight[i], synapses->gain[i], synapses->tau_syn[i], synapses->delay[i]);
+
+    fclose(fp);
 }
