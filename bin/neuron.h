@@ -42,7 +42,7 @@ typedef struct Layer Layer;
  * to merge two existing.
  * @return Layer
  */
-Layer create_neurons(size_t num_neurons, bool new_layer);
+Layer *create_neurons(size_t num_neurons, bool new_neurons_ids);
 
 /**
  * @brief Set the initial potential, current, recovery and
@@ -62,7 +62,7 @@ Layer create_neurons(size_t num_neurons, bool new_layer);
  * @param init_d The initial value for parameter d.
  * @return void
  */
-void initialize_neurons(Layer neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d);
+void initialize_neurons(Layer *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d);
 
 /**
  * @brief Combine two layers of neurons into a single layer.
@@ -71,7 +71,7 @@ void initialize_neurons(Layer neurons, int start_idx, int end_idx, float init_v,
  * @param layer2
  * @return Layer
  */
-Layer combine_layers(Layer *layer1, Layer *layer2);
+Layer *combine_layers(Layer *layer1, Layer *layer2);
 
 /**
  * @brief Simulate the neurons for one time step.
@@ -81,7 +81,7 @@ Layer combine_layers(Layer *layer1, Layer *layer2);
  * @param dt
  * @param logger May be null if no logging is needed.
  */
-void simulate_neurons(Layer neurons, float dt, NeuronLogger *logger);
+void simulate_neurons(Layer *neurons, float dt, NeuronLogger *logger);
 
 /**
  * @brief Uses an input currents vector to set the input bias currents for the neurons.
@@ -89,7 +89,7 @@ void simulate_neurons(Layer neurons, float dt, NeuronLogger *logger);
  * @param neuron A neuron object.
  * @param currents An array of input currents.
  */
-void set_input(Layer neuron, int *currents);
+void set_input(Layer *neuron, int *currents);
 
 /**
  * @brief Free the memory allocated for the neurons.

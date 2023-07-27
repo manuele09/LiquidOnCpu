@@ -38,7 +38,7 @@ typedef struct Synapse Synapse;
  * @param n_synapses 
  * @return Synapse 
  */
-Synapse create_synapses(int n_synapses);
+Synapse *create_synapses(int n_synapses);
 
 /**
  * @brief Connect two layers of neurons. The parameters of the synapse are set to default values:
@@ -53,7 +53,7 @@ Synapse create_synapses(int n_synapses);
  * @return Synapse 
  * @attention The final synapse object cannot yet be utilized. It is necessary to set the pre and post locations.
  */
-Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix);
+Synapse *connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix);
 
 /**
  * @brief Find the location of the presynaptic and postsynaptic neurons inside the layer, 
@@ -82,7 +82,7 @@ void  simulate_synapses(Layer *neurons, Synapse *synapses, int step, float dt);
  * @param syn2 
  * @return Synapse 
  */
-Synapse combine_synapses(Synapse *syn1, Synapse *syn2);
+Synapse *combine_synapses(Synapse *syn1, Synapse *syn2);
 
 /**
  * @brief Free the memory allocated for the synapses.   

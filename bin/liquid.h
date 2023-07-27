@@ -16,15 +16,15 @@
 struct Liquid
 {
     float dt;
-    Layer exc_neurons;
-    Layer inh_neurons;
-    Layer all_neurons;
+    Layer *exc_neurons;
+    Layer *inh_neurons;
+    Layer *all_neurons;
 
-    Synapse ee_synapses;
-    Synapse ei_synapses;
-    Synapse ii_synapses;
-    Synapse ie_synapses;
-    Synapse all_synapses;
+    Synapse *ee_synapses;
+    Synapse *ei_synapses;
+    Synapse *ii_synapses;
+    Synapse *ie_synapses;
+    Synapse *all_synapses;
 };
 typedef struct Liquid Liquid;
 
@@ -38,12 +38,12 @@ typedef struct Liquid Liquid;
  * @param J 
  * @param dt 
  */
-Synapse connect_liquid(Layer layer1, Layer layer2, int indegree, double J, float dt);
+Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt);
 
-Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie);
+Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie);
 
-void simulate_liquid(Liquid liquid, int steps);
+void simulate_liquid(Liquid *liquid, int steps);
 
-void free_liquid(Liquid liquid);
+void free_liquid(Liquid *liquid);
 
 #endif
