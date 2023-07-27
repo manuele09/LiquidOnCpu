@@ -8,11 +8,13 @@
 
 int main()
 {
-    srand(time(NULL));
+    // srand(time(NULL));
 
     //create the neurons
     Layer *layer1 = create_neurons(10, true);
+    // visualize_neuron_layer(layer1);
     Layer *layer2 = create_neurons(10, true);
+    // visualize_neuron_layer(layer2);
 
     //create the connettivity matrix
     int *conn_matrix = malloc(sizeof(int) * 10 * 10);
@@ -22,15 +24,41 @@ int main()
 
     //connect the layers
     Synapse *syn1 = connect(layer1, layer2, conn_matrix);
+    // visualize_synapse(syn1);
     Synapse *syn2 = connect(layer2, layer1, conn_matrix);
+    // visualize_synapse(syn2);
 
     //At this point we can simulate each separate object, 
     //ie the two neuron layers and the two synapses.
 
     //Instead we will simplify the final structure.
-    Layer *neurons = combine_layers(layer1, layer2);
-    Synapse *synapses = combine_synapses(syn1, syn2);
+    Layer *layers[] = {layer1, layer2};
+    Layer *neurons = combine_layers(layers, 2);
+    // visualize_neuron_layer(neurons);
+
+    Synapse *synapses_list[] = {syn1, syn2};
+    Synapse *synapses = combine_synapses(synapses_list, 2);
+    set_neurons_location(neurons, synapses);
+    // visualize_synapse(synapses);
+
+    float *bias_current = (float *)malloc(sizeof(float) * neurons->n_neurons);
+    // for (int i = 0; i < neurons->n_neurons; i++)
+    //     bias_current[i] = 10.0f;
+    bias_current[0] = 20;
+    set_bias_current(neurons, bias_current);
+
+    NeuronLogger *logger = create_neuron_logger(neurons->n_neurons, 10);
+    for (int i = 0; i < 10; i++)
+    {
+        simulate_neurons(neurons, 0.1f, logger);
+        simulate_synapses(synapses, 0.1f);
+        // printf("Neuron %d, Spike: %d\n", 0, neurons->last_spike[0]);
+
+    }
+    writeNeuronLogger("../logs/prova_log.txt", logger);
 
 
     return 0;
 }
+
+

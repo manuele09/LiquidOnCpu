@@ -17,6 +17,7 @@ struct NeuronLogger
     float *I;      // input current
     float *I_bias; // bias current
     int *id;       // unique id for each neuron
+    int *layer_id; // id of the layer the neuron belongs to
     int counter;
     int size; // number of neurons times number of steps
 };
@@ -28,8 +29,10 @@ typedef struct NeuronLogger NeuronLogger;
  * @param size number of neurons times number of steps
  * @return NeuronLogger
  */
-NeuronLogger create_logger(size_t size);
+NeuronLogger *create_neuron_logger(size_t n_neurons, size_t steps);
 
-void writeNeuronLogger(char *file_name, NeuronLogger logger);
+void writeNeuronLogger(char *file_name, NeuronLogger *logger);
+
+void free_neuron_logger(NeuronLogger *logger);
 
 #endif

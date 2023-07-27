@@ -13,6 +13,9 @@
 struct Layer
 {
     int *id;       // unique id for each neuron
+    int *neuron_layer_id; //the layer id of provenience of the neuron, can be different from the layer id of the layer.
+                          //The layer of provenience may not exists anymore. Storing the layer id of provenience
+                          //is useful to keep track of the layer composition of the final (combined) layer.
     int *last_spike; // timestamp of last spike emitted
     
     float *V;        // membrane potential
@@ -71,7 +74,7 @@ void initialize_neurons(Layer *neurons, int start_idx, int end_idx, float init_v
  * @param layer2
  * @return Layer
  */
-Layer *combine_layers(Layer *layer1, Layer *layer2);
+Layer *combine_layers(Layer **layers, int num_layers);
 
 /**
  * @brief Simulate the neurons for one time step.
@@ -89,7 +92,7 @@ void simulate_neurons(Layer *neurons, float dt, NeuronLogger *logger);
  * @param neuron A neuron object.
  * @param currents An array of input currents.
  */
-void set_input(Layer *neuron, int *currents);
+void set_bias_current(Layer *neuron, float *currents);
 
 /**
  * @brief Free the memory allocated for the neurons.
@@ -98,11 +101,5 @@ void set_input(Layer *neuron, int *currents);
  */
 void free_neurons(Layer *neurons);
 
-/**
- * @brief Free the memory allocated for the neuron logger.
- *
- * @param logger
- */
-void free_neuron_logger(NeuronLogger *logger);
 
 #endif

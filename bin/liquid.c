@@ -2,7 +2,7 @@
 
 Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt)
 {
-    Synapse *syn = create_synapses(layer2->n_neurons * indegree);
+    Synapse *syn = create_synapses(layer2->n_neurons * indegree, true);
     double delay = GaussianDistributionClipped(10, 20, 3, 200);
     double w, tau;
     if (J >= 0)
@@ -42,7 +42,8 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_
     liquid->exc_neurons = create_neurons(n_exc, true);
     liquid->inh_neurons = create_neurons(n_inh, true);
 
-    liquid->all_neurons = combine_layers(liquid->exc_neurons, liquid->inh_neurons);
+    Layer *layers[2] ={liquid->exc_neurons, liquid->inh_neurons};
+    liquid->all_neurons = combine_layers(layers, 2);
 
     for (int i = 0; i < liquid->all_neurons->n_neurons; i++)
     {
@@ -63,30 +64,26 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_
 
     
     
-
-    Synapse *temp1 = combine_synapses(liquid->ee_synapses, liquid->ei_synapses);
-    Synapse *temp2 = combine_synapses(temp1, liquid->ii_synapses);
-    liquid->all_synapses = combine_synapses(temp2, liquid->ie_synapses);
+    Synapse *synapses[] = {liquid->ee_synapses, liquid->ei_synapses, liquid->ii_synapses, liquid->ie_synapses};
+    liquid->all_synapses = combine_synapses(synapses, 4);
 
     set_neurons_location(liquid->all_neurons, liquid->all_synapses);
 
-    free_synapses(temp1);
-    free_synapses(temp2);
 
     return liquid;
 }
 
 void simulate_liquid(Liquid *liquid, int steps)
 {
-    NeuronLogger logger = create_logger(liquid->all_neurons->n_neurons * steps);
+    NeuronLogger *logger = create_neuron_logger(liquid->all_neurons->n_neurons, steps);
     for (int s = 0; s < steps; s++)
     {
-        simulate_neurons(liquid->all_neurons, s + liquid->dt, &logger);
-        simulate_synapses(liquid->all_neurons, liquid->all_synapses, s, liquid->dt);
+        simulate_neurons(liquid->all_neurons, liquid->dt, logger);
+        simulate_synapses(liquid->all_synapses, liquid->dt);
     }
 
     writeNeuronLogger("logs/liquid_neurons.txt", logger);
-    free_neuron_logger(&logger);
+    free_neuron_logger(logger);
 }
 
 void free_liquid(Liquid *liquid)

@@ -1,20 +1,26 @@
 #include "neuron.h"
 
-
 Layer *create_neurons(size_t num_neurons, bool new_neurons_ids)
 {
     static int global_id = 0;
     static int global_layer_id = 0;
-    Layer* neurons = (Layer*)malloc(sizeof(Layer));
-    
-    
+    Layer *neurons = (Layer *)calloc(sizeof(Layer), 1);
+
+    neurons->n_neurons = num_neurons;
+    neurons->layer_id = global_layer_id++;
+    neurons->step = 0;
+
     neurons->id = (int *)calloc(num_neurons, sizeof(int));
+    neurons->neuron_layer_id = (int *)calloc(num_neurons, sizeof(int));
+
     if (new_neurons_ids)
         for (int i = 0; i < num_neurons; i++)
+        {
             neurons->id[i] = global_id++;
+            neurons->neuron_layer_id[i] = neurons->layer_id;
+        }
 
     neurons->last_spike = (int *)calloc(num_neurons, sizeof(int));
-
     neurons->V = (float *)calloc(num_neurons, sizeof(float));
     neurons->U = (float *)calloc(num_neurons, sizeof(float));
     neurons->I = (float *)calloc(num_neurons, sizeof(float));
@@ -23,11 +29,6 @@ Layer *create_neurons(size_t num_neurons, bool new_neurons_ids)
     neurons->b = (float *)calloc(num_neurons, sizeof(float));
     neurons->c = (float *)calloc(num_neurons, sizeof(float));
     neurons->d = (float *)calloc(num_neurons, sizeof(float));
-    
-    neurons->n_neurons = num_neurons;
-    neurons->layer_id = global_layer_id++;
-    neurons->step = 0;
-
 
     initialize_neurons(neurons, 0, -1, -65.0f, -30.0f, 0.02f, 0.2f, -65.0f, 8.0f);
     return neurons;
@@ -55,47 +56,40 @@ void initialize_neurons(Layer *neurons, int start_idx, int end_idx, float init_v
     }
 }
 
-Layer *combine_layers(Layer *pre_layer, Layer *post_layer)
+Layer *combine_layers(Layer **layers, int num_layers)
 {
-    //TODO: eliminare vecchi layer, altrimenti sarebbe inconsistente avere più
-    //neuroni con lo stesso id in memoria.
-    int total_n = pre_layer->n_neurons + post_layer->n_neurons;
+    // TODO: eliminare vecchi layer, altrimenti sarebbe inconsistente avere più
+    // neuroni con lo stesso id in memoria.
+
+    int total_n = 0;
+    for (int i = 0; i < num_layers; i++)
+        total_n += layers[i]->n_neurons;
+
     Layer *network;
 
     network = create_neurons(total_n, false);
 
-    int net_id = 0;
-    for (int i = 0; i < pre_layer->n_neurons; i++)
+    int index = 0;
+    for (int l = 0; l < num_layers; l++)
     {
-        network->U[net_id] = pre_layer->U[i];
-        network->V[net_id] = pre_layer->V[i];
-        network->I[net_id] = pre_layer->I[i];
-        network->I_bias[net_id] = pre_layer->I_bias[i];
-        network->a[net_id] = pre_layer->a[i];
-        network->b[net_id] = pre_layer->b[i];
-        network->c[net_id] = pre_layer->c[i];
-        network->d[net_id] = pre_layer->d[i];
-        network->id[net_id] = pre_layer->id[i];
-        net_id++;
+        for (int i = 0; i < layers[l]->n_neurons; i++)
+        {
+            network->U[index] = layers[l]->U[i];
+            network->V[index] = layers[l]->V[i];
+            network->I[index] = layers[l]->I[i];
+            network->I_bias[index] = layers[l]->I_bias[i];
+            network->a[index] = layers[l]->a[i];
+            network->b[index] = layers[l]->b[i];
+            network->c[index] = layers[l]->c[i];
+            network->d[index] = layers[l]->d[i];
+            network->id[index] = layers[l]->id[i];
+            network->neuron_layer_id[index] = layers[l]->neuron_layer_id[i];
+            index++;
+        }
+        free_neurons(layers[l]);
     }
-    for (int i = 0; i < post_layer->n_neurons; i++)
-    {
-        network->V[net_id] = post_layer->V[i];
-        network->U[net_id] = post_layer->U[i];
-        network->I[net_id] = post_layer->I[i];
-        network->I_bias[net_id] = post_layer->I_bias[i];
-        network->a[net_id] = post_layer->a[i];
-        network->b[net_id] = post_layer->b[i];
-        network->c[net_id] = post_layer->c[i];
-        network->d[net_id] = post_layer->d[i];
-        network->last_spike[net_id] = post_layer->last_spike[i];
-        network->id[net_id] = post_layer->id[i];
-        net_id++;
-    }
-
     return network;
 }
-
 
 void simulate_neurons(Layer *neurons, float dt, NeuronLogger *logger)
 {
@@ -111,27 +105,29 @@ void simulate_neurons(Layer *neurons, float dt, NeuronLogger *logger)
             neurons->V[i] = neurons->c[i];
             neurons->U[i] += neurons->d[i];
             neurons->last_spike[i] = neurons->step;
+            printf("Neuron %d fired at step %d.\n", neurons->id[i], neurons->step);
         }
         else
         {
             neurons->V[i] += dt * (0.04f * V * V + 5.0f * V + 140.0f - U + I + I_bias);
             neurons->U[i] += dt * neurons->a[i] * (neurons->b[i] * V - U);
+        }
 
-            if (logger != NULL)
-            {
-                logger->step[logger->counter] = neurons->step;
-                logger->V[logger->counter] = neurons->V[i];
-                logger->I[logger->counter] = neurons->I[i];
-                logger->I_bias[logger->counter] = neurons->I_bias[i];
-                logger->id[logger->counter] = neurons->id[i];
-                logger->counter++;
-            }
+        if (logger != NULL)
+        {
+            logger->step[logger->counter] = neurons->step;
+            logger->V[logger->counter] = neurons->V[i];
+            logger->I[logger->counter] = neurons->I[i];
+            logger->I_bias[logger->counter] = neurons->I_bias[i];
+            logger->id[logger->counter] = neurons->id[i];
+            logger->layer_id[logger->counter] = neurons->neuron_layer_id[i];
+            logger->counter++;
         }
     }
     neurons->step++;
 }
 
-void set_input(Layer *neuron, int *currents)
+void set_bias_current(Layer *neuron, float *currents)
 {
     for (int i = 0; i < neuron->n_neurons; i++)
         neuron->I_bias[i] = currents[i];
@@ -149,13 +145,5 @@ void free_neurons(Layer *neurons)
     free(neurons->d);
     free(neurons->last_spike);
     free(neurons->id);
-}
-
-void free_neuron_logger(NeuronLogger *logger)
-{
-    free(logger->V);
-    free(logger->I);
-    free(logger->I_bias);
-    free(logger->id);
-    free(logger->step);
+    free(neurons->neuron_layer_id);
 }

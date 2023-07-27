@@ -15,6 +15,8 @@
  */
 struct Synapse
 {
+    int *synapse_id; //id of provenance.
+
     int *pre_neuron_idx; //unique id of the presynaptic neuron
     int *post_neuron_idx; //unique id of the postsynaptic neuron
 
@@ -28,6 +30,7 @@ struct Synapse
     float *tau_syn; //questi parametri dovrebbero essere espressi in ms
     float *delay;
 
+    int synapse_family_id;
     int n_synapses;
 };
 typedef struct Synapse Synapse;
@@ -38,7 +41,7 @@ typedef struct Synapse Synapse;
  * @param n_synapses 
  * @return Synapse 
  */
-Synapse *create_synapses(int n_synapses);
+Synapse *create_synapses(int n_synapses, bool new_synapses_ids);
 
 /**
  * @brief Connect two layers of neurons. The parameters of the synapse are set to default values:
@@ -72,7 +75,7 @@ void set_neurons_location(Layer *layer, Synapse *synpase);
  * @param step 
  * @param dt 
  */
-void  simulate_synapses(Layer *neurons, Synapse *synapses, int step, float dt);
+void simulate_synapses(Synapse *synapses, float dt);
 
 /**
  * @brief Create a network syn object. This function is used to create a synapse object that contains
@@ -82,7 +85,7 @@ void  simulate_synapses(Layer *neurons, Synapse *synapses, int step, float dt);
  * @param syn2 
  * @return Synapse 
  */
-Synapse *combine_synapses(Synapse *syn1, Synapse *syn2);
+Synapse *combine_synapses(Synapse **synapse, int num_synapse);
 
 /**
  * @brief Free the memory allocated for the synapses.   
