@@ -1,18 +1,4 @@
 #include "synapse.h"
-// Immaginiamo di voler connettere due popolazioni di neuroni:
-// caso a: le due popolazioni sono distinte.
-//   1) Creo le due popolazioni;
-//   2) Faccio le opportune connessioni;
-//   3) Ho finito.
-//   L'oggetto sinapsi dovrà possedere i due indirizzi relativi alle popolazioni.
-
-// caso b: le due popolazioni saranno fuse in un unica.
-//   1) Creo le due popolazioni;
-//   2) Faccio le opportune connessioni;
-//   3) Unisco le due popolazioni;
-//   4) Cambio i riferimenti all'interno della sinapsi.
-//   L'oggetto sinapsi dovrà possedere l'indirizzo dell'unica popolazione finale.
-//   I due indirizzi disponibili possono essere impostati coincidenti.
 
 Synapse create_synapses(int n_synapses)
 {
@@ -20,8 +6,7 @@ Synapse create_synapses(int n_synapses)
     synaptic.pre_neuron_idx = (int *)calloc(n_synapses, sizeof(int));
     synaptic.post_neuron_idx = (int *)calloc(n_synapses, sizeof(int));
 
-    synaptic.pre_layer = NULL;
-    synaptic.post_layer = NULL;
+    synaptic.layer = NULL;
 
     synaptic.pre_location = (int *)calloc(n_synapses, sizeof(int));
     synaptic.post_location = (int *)calloc(n_synapses, sizeof(int));
@@ -38,6 +23,7 @@ Synapse create_synapses(int n_synapses)
 
 Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix)
 {
+    //Find the total number of synapses
     int num_syn = 0;
     for (int i = 0; i < pre_layer->n_neurons; i++)
         for (int j = 0; j < post_layer->n_neurons; j++)
@@ -45,20 +31,18 @@ Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix)
 
     Synapse synapses = create_synapses(num_syn);
 
-    synapses.pre_layer = pre_layer;
-    synapses.post_layer = post_layer;
-
     int syn_index = 0;
     for (int i = 0; i < pre_layer->n_neurons; i++)
         for (int j = 0; j < post_layer->n_neurons; j++)
         {
+            //There is a connection between the neuron i and the neuron j
             if (conn_matrix[i * post_layer->n_neurons + j] == 1)
             {
+                //Set the ids of the pre and post neurons
                 synapses.pre_neuron_idx[syn_index] = pre_layer->id[i];
-                synapses.pre_location[syn_index] = i;
                 synapses.post_neuron_idx[syn_index] = post_layer->id[j];
-                synapses.post_location[syn_index] = j;
 
+                //Set the default values of the synapse
                 synapses.gain[syn_index] = 1;
                 synapses.weight[syn_index] = 1;
                 synapses.tau_syn[syn_index] = 1;
@@ -70,27 +54,41 @@ Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix)
     return synapses;
 }
 
-// aggiungere controllo errori nel caso alcuni neuroni non siano trovati
-void set_pre_locations(Layer pre_layer, Layer post_layer, Synapse synpase)
+
+void set_neurons_location(Layer *layer, Synapse *synpase)
 {
-    for (int i = 0; i < synpase.n_synapses; i++)
+    int found;
+    for (int i = 0; i < synpase->n_synapses; i++)
     {
-        for (int j = 0; j < pre_layer.n_neurons; j++)
+        found = 0;
+
+        //Find the locations of the pre and post neurons of the j-th synapse
+        for (int j = 0; j < layer->n_neurons; j++)
         {
-            if (pre_layer.id[j] == synpase.pre_neuron_idx[i])
+            if (found == 2)
+                break;
+            //Find pre location
+            if (layer->id[j] == synpase->pre_neuron_idx[i])
             {
-                synpase.pre_location[i] = j;
+                synpase->pre_location[i] = j;
+                found++;
+                break;
+            }
+            //Find post location
+            if (layer->id[j] == synpase->post_neuron_idx[i])
+            {
+                synpase->post_location[i] = j;
+                found++;
                 break;
             }
         }
-        for (int j = 0; j < post_layer.n_neurons; j++)
+
+        if (found != 2)
         {
-            if (post_layer.id[j] == synpase.post_neuron_idx[i])
-            {
-                synpase.post_location[i] = j;
-                break;
-            }
+            printf("Error: pre or post neuron not found in the layer.\n");
+            exit(1);
         }
+
     }
 }
 
@@ -116,69 +114,32 @@ void simulate_synapses(Layer *neurons, Synapse *synapses, int step, float dt)
 
 Synapse combine_synapses(Synapse *syn1, Synapse *syn2)
 {
-    Layer *layers[4] = {syn1->pre_layer, syn2->pre_layer, syn1->post_layer, syn2->post_layer};
-    int ids[4] = {layers[0]->layer_id, layers[1]->layer_id, layers[2]->layer_id, layers[3]->layer_id};
-
-    Layer *unique_layers[4];
-    int index = 0;
-    int uniqueOccurrences = 0;
-    // il count vale 1 solamente per la ultima occorrenza di un valore nell'array
-    for (int i = 0; i < 4; i++)
-    {
-        int count = 1;
-        for (int j = i + 1; j < 4; j++)
-            if (ids[i] == ids[j])
-            {
-                count = 0; // Found a duplicate, reset count to 0
-                break;
-            }
-        uniqueOccurrences += count;
-        if (count == 1)
-            unique_layers[index++] = layers[i];
-    }
-
-    if (uniqueOccurrences > 2)
-    {
-        printf("Combine synapses error: a syn obj can contain at most 2 different layers.\nHere there are %d\n", uniqueOccurrences);
-        exit(1);
-    }
-
     int total_s = syn1->n_synapses + syn2->n_synapses;
     Synapse syn_net;
-
     syn_net = create_synapses(total_s);
 
-    if (uniqueOccurrences == 1) // Pre_layer and Post_layer are the same
-    {
-        syn_net.pre_layer = syn1->pre_layer;
-        syn_net.post_layer = syn1->pre_layer;
-    }
-    else // There are two different layers
-    {
-        syn_net.pre_layer = unique_layers[0];
-        syn_net.post_layer = unique_layers[1];
-    }
-
-    int net_id = 0;
+    int net_index = 0;
     for (int i = 0; i < syn1->n_synapses; i++)
     {
-        syn_net.pre_neuron_idx[net_id] = syn1->pre_neuron_idx[i];
-        syn_net.post_neuron_idx[net_id] = syn1->post_neuron_idx[i];
-        syn_net.weight[net_id] = syn1->weight[i];
-        syn_net.gain[net_id] = syn1->gain[i];
-        syn_net.tau_syn[net_id] = syn1->tau_syn[i];
-        syn_net.delay[net_id] = syn1->delay[i];
-        net_id++;
+        syn_net.pre_neuron_idx[net_index] = syn1->pre_neuron_idx[i];
+        syn_net.post_neuron_idx[net_index] = syn1->post_neuron_idx[i];
+
+        syn_net.weight[net_index] = syn1->weight[i];
+        syn_net.gain[net_index] = syn1->gain[i];
+        syn_net.tau_syn[net_index] = syn1->tau_syn[i];
+        syn_net.delay[net_index] = syn1->delay[i];
+        net_index++;
     }
     for (int i = 0; i < syn2->n_synapses; i++)
     {
-        syn_net.pre_neuron_idx[net_id] = syn2->pre_neuron_idx[i];
-        syn_net.post_neuron_idx[net_id] = syn2->post_neuron_idx[i];
-        syn_net.weight[net_id] = syn2->weight[i];
-        syn_net.gain[net_id] = syn2->gain[i];
-        syn_net.tau_syn[net_id] = syn2->tau_syn[i];
-        syn_net.delay[net_id] = syn2->delay[i];
-        net_id++;
+        syn_net.pre_neuron_idx[net_index] = syn2->pre_neuron_idx[i];
+        syn_net.post_neuron_idx[net_index] = syn2->post_neuron_idx[i];
+
+        syn_net.weight[net_index] = syn2->weight[i];
+        syn_net.gain[net_index] = syn2->gain[i];
+        syn_net.tau_syn[net_index] = syn2->tau_syn[i];
+        syn_net.delay[net_index] = syn2->delay[i];
+        net_index++;
     }
 
     return syn_net;

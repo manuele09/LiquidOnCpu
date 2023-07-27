@@ -11,14 +11,14 @@
  * It contains a maximum of two different layers. It may also contain
  * one layer. In this case the two layers are set the same.
  * 
+ * The values pre_location and post_location are not valid if layer is NULL.
  */
 struct Synapse
 {
     int *pre_neuron_idx; //unique id of the presynaptic neuron
     int *post_neuron_idx; //unique id of the postsynaptic neuron
 
-    Layer *pre_layer; //The presynaptic layer
-    Layer *post_layer; //The postsynaptic layer
+    Layer *layer; //The layer address
 
     int *pre_location; //Location of presynaptic neuron in the presynaptic layer (different from the id)
     int *post_location; //Location of presynaptic neuron in the presynaptic layer (different from the id)
@@ -44,21 +44,25 @@ Synapse create_synapses(int n_synapses);
  * @brief Connect two layers of neurons. The parameters of the synapse are set to default values:
  * gain = 1, weight = 1, tau_syn = 1, delay = 0. 
  * 
- * @param layer1 
- * @param layer2 
- * @param conn_matrix // Matrix of connections between neurons of layer1 and layer2
+ * @param pre_layer Layer containing the presynaptic neurons.
+ * @param post_layer Layer containing the postsynaptic neurons.
+ * @param conn_matrix Matrix of connections between neurons of layer1 and layer2.
+ * Must have dimensions: pre_layer->n_neurons, post_layer->n_neurons.
+ * If there is a connection between the neuron i of layer1 and the neuron j of layer2, 
+ * then conn_matrix[i * post_layer->n_neurons + j] = 1, else 0.
  * @return Synapse 
+ * @attention The final synapse object cannot yet be utilized. It is necessary to set the pre and post locations.
  */
 Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix);
 
 /**
- * @brief Set the pre locations object. This function is used to set the index of the presynaptic neuron,
- * relative to the array of neurons, in the array of synapse.
+ * @brief Find the location of the presynaptic and postsynaptic neurons inside the layer, 
+ * and set the pre_location and post_location parameters of the synapse.
  * 
- * @param neurons 
- * @param synpase 
+ * @param layer An unique layer in wich are stored ALL the neurons of the network. 
+ * @param synpase The synapse object to set.
  */
-void set_pre_locations(Layer pre_layer, Layer post_layer, Synapse synpase);
+void set_neurons_location(Layer *layer, Synapse *synpase);
 
 /**
  * @brief Simulate the synapses (only one step).

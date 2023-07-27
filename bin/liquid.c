@@ -68,7 +68,7 @@ Liquid create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_i
     Synapse temp2 = combine_synapses(&temp1, &liquid.ii_synapses);
     liquid.all_synapses = combine_synapses(&temp2, &liquid.ie_synapses);
 
-    set_pre_locations(liquid.all_neurons, liquid.all_neurons, liquid.all_synapses);
+    set_neurons_location(&liquid.all_neurons, &liquid.all_synapses);
 
     free_synapses(&temp1);
     free_synapses(&temp2);
