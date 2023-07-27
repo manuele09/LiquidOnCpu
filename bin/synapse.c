@@ -6,7 +6,7 @@ Synapse *create_synapses(int n_synapses, bool new_synapses_ids)
 {
     static int synapse_global_id = 0;
 
-    Synapse *synaptic = (Synapse *)calloc(sizeof(Synapse), 1);
+    Synapse *synaptic = (Synapse *)calloc(1, sizeof(Synapse));
     synaptic->synapse_family_id = synapse_global_id++;
 
     synaptic->synapse_id = (int *)calloc(n_synapses, sizeof(int));
@@ -113,16 +113,14 @@ void simulate_synapses(Synapse *synapses, float dt)
         {
             if (synapses->post_neuron_idx[j] != neurons->id[i])
                 continue;
-
-            int last_spike = neurons->last_spike[i];
+            int last_spike = neurons->last_spike[synapses->pre_location[j]];
 
             // printf("Step: %d\n", step);
             // printf("Neuron %d, Spike: %d\n", i, last_spike);
-            I_syn += synapses->weight[j] * exp(-(step - last_spike));
-            // I_syn += synapses->weight[j] * exp(-(step - last_spike + synapses->delay[j]) * dt / synapses->tau_syn[j]);
+            I_syn += synapses->weight[j] * exp(-(step - last_spike + synapses->delay[j]) * dt / synapses->tau_syn[j]);
         }
         neurons->I[i] = I_syn;
-        // printf("%f\n", I_syn);
+        printf("%d %f\n",i, I_syn);
     }
 }
 

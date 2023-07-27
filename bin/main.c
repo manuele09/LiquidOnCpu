@@ -41,18 +41,17 @@ int main()
     set_neurons_location(neurons, synapses);
     // visualize_synapse(synapses);
 
-    float *bias_current = (float *)malloc(sizeof(float) * neurons->n_neurons);
+    float *bias_current = (float *)calloc(neurons->n_neurons, sizeof(float));
     // for (int i = 0; i < neurons->n_neurons; i++)
     //     bias_current[i] = 10.0f;
-    bias_current[0] = 20;
+    bias_current[0] = 200;
     set_bias_current(neurons, bias_current);
 
-    NeuronLogger *logger = create_neuron_logger(neurons->n_neurons, 10);
-    for (int i = 0; i < 10; i++)
+    NeuronLogger *logger = create_neuron_logger(neurons->n_neurons, 1000);
+    for (int i = 0; i < 1000; i++)
     {
         simulate_neurons(neurons, 0.1f, logger);
         simulate_synapses(synapses, 0.1f);
-        // printf("Neuron %d, Spike: %d\n", 0, neurons->last_spike[0]);
 
     }
     writeNeuronLogger("../logs/prova_log.txt", logger);

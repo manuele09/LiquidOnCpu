@@ -4,7 +4,7 @@ Layer *create_neurons(size_t num_neurons, bool new_neurons_ids)
 {
     static int global_id = 0;
     static int global_layer_id = 0;
-    Layer *neurons = (Layer *)calloc(sizeof(Layer), 1);
+    Layer *neurons = (Layer *)calloc(1, sizeof(Layer));
 
     neurons->n_neurons = num_neurons;
     neurons->layer_id = global_layer_id++;
@@ -105,7 +105,6 @@ void simulate_neurons(Layer *neurons, float dt, NeuronLogger *logger)
             neurons->V[i] = neurons->c[i];
             neurons->U[i] += neurons->d[i];
             neurons->last_spike[i] = neurons->step;
-            printf("Neuron %d fired at step %d.\n", neurons->id[i], neurons->step);
         }
         else
         {
