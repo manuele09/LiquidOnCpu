@@ -1,16 +1,20 @@
 #ifndef _NEURON_H
 #define _NEURON_H 1
-
+#include "state_logger.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
 /**
- * @brief A basic neuron model, based on Izikevich.
- *
+ * @brief Implements the Izikevich neuron model. This structure contains n_neurons neurons.
+ * The memory storage is optimized for GPU computation. All values of a certain parameter are stored
+ * in a single array.
  */
-struct Neuron
+struct Layer
 {
+    int *id;       // unique id for each neuron
+    int *last_spike; // timestamp of last spike emitted
+    
     float *V;        // membrane potential
     float *U;        // recovery variable
     float *I;        // input current
@@ -19,50 +23,35 @@ struct Neuron
     float *b;        // parameter
     float *c;        // parameter
     float *d;        // parameter
-    int *last_spike; // timestamp of last spike emitted
-    int *id;         // unique id for each neuron
-    int size;        // number of neurons
+
+    int n_neurons; // number of neurons
+    int step;      // current simulation step
+    int layer_id; //unique id for each layer
 };
-typedef struct Neuron Neuron;
+typedef struct Layer Layer;
+
+
 
 /**
- * @brief A logger for neuron data.
- *
- */
-struct NeuronLogger
-{
-    int *step;
-    float *V;      // membrane potential
-    float *I;      // input current
-    float *I_bias; // bias current
-    int *id;       // unique id for each neuron
-    int counter;
-    int size; // number of neurons times number of steps
-};
-typedef struct NeuronLogger NeuronLogger;
-
-/**
- * @brief Create a logger object.
- * 
- * @param size number of neurons times number of steps
- * @return NeuronLogger 
- */
-NeuronLogger create_logger(size_t size);
-
-void writeNeuronLogger(char *file_name, NeuronLogger logger);
-
-/**
- * @brief Create a neurons object, containing num_neurons neurons.
+ * @brief Create a Layer (unique id) containing num_neurons neurons.
+ * Each neuron is identified by a unique id.
+ * They are initialized with default values.
  *
  * @param num_neurons
- * @return Neuron
+ * @param new_layer If true doesn't assigne new indexes to neurons. Usefule when creating a layer
+ * to merge two existing.
+ * @return Layer
  */
-Neuron create_neurons(size_t num_neurons);
+Layer create_neurons(size_t num_neurons, bool new_layer);
 
 /**
- * @brief Initialize the initial potential, current, and parameters (a, b, c, d) for a range of neurons.
- *
- * @param neurons Pointer to the Neuron array.
+ * @brief Set the initial potential, current, recovery and
+ * parameters (a, b, c, d) for a range of neurons in a Layer,
+ * where the start_idx end end_idx are inclusive.
+ * @attention The indexes refers only to the position of the neurons in the Layer,
+ * not to the unique ids of the neurons.
+ * 
+ * @param neurons The Layer containing the neurons.
  * @param start_idx The start index of neurons to be initialized.
  * @param end_idx The end index of neurons to be initialized. If -1, initialize all neurons starting from start_idx.
  * @param init_v The initial value for membrane potential.
@@ -73,16 +62,16 @@ Neuron create_neurons(size_t num_neurons);
  * @param init_d The initial value for parameter d.
  * @return void
  */
-void initialize_neurons(Neuron *neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d);
+void initialize_neurons(Layer neurons, int start_idx, int end_idx, float init_v, float init_u, float init_a, float init_b, float init_c, float init_d);
 
 /**
- * @brief Create a network object, containing two layers of neurons.
+ * @brief Combine two layers of neurons into a single layer.
  *
  * @param layer1
  * @param layer2
- * @return Neuron
+ * @return Layer
  */
-Neuron create_network(Neuron layer1, Neuron layer2);
+Layer combine_layers(Layer *layer1, Layer *layer2);
 
 /**
  * @brief Simulate the neurons for one time step.
@@ -92,7 +81,7 @@ Neuron create_network(Neuron layer1, Neuron layer2);
  * @param dt
  * @param logger May be null if no logging is needed.
  */
-void simulate_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger);
+void simulate_neurons(Layer neurons, float dt, NeuronLogger *logger);
 
 /**
  * @brief Uses an input currents vector to set the input bias currents for the neurons.
@@ -100,14 +89,14 @@ void simulate_neurons(Neuron *neurons, int step, float dt, NeuronLogger *logger)
  * @param neuron A neuron object.
  * @param currents An array of input currents.
  */
-void set_input(Neuron neuron, int *currents);
+void set_input(Layer neuron, int *currents);
 
 /**
  * @brief Free the memory allocated for the neurons.
  *
  * @param neurons
  */
-void free_neurons(Neuron *neurons);
+void free_neurons(Layer *neurons);
 
 /**
  * @brief Free the memory allocated for the neuron logger.

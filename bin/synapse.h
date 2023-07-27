@@ -4,34 +4,41 @@
 #include <stdlib.h>
 #include <math.h>
 #include "neuron.h"
-// #define MAX_SPIKE_TIMES 50
-//  considerando la simulazione delle sinapsi, è possible usare un approccio
-//  event driven: se un determinato neurone non emmette spike, invece di calcoare
-//  il contributo in corrente degli spike passati, basta moltiplicare il valore vecchio
-//  per una costante (e^-dt). Questo presuppone che si conservi in memoria in locazioni distinte
-//  il contributo in corrente da parte di ciascun neurone presinaptico, perchè un nuerone può
-//  spikare, altri no.
 
+
+/**
+ * @brief The structure contains the synapses that connects two layers.
+ * It contains a maximum of two different layers. It may also contain
+ * one layer. In this case the two layers are set the same.
+ * 
+ */
 struct Synapse
 {
-    int *pre_neuron_idx;
-    int *pre_location;
-    int *post_neuron_idx;
+    int *pre_neuron_idx; //unique id of the presynaptic neuron
+    int *post_neuron_idx; //unique id of the postsynaptic neuron
+
+    Layer *pre_layer; //The presynaptic layer
+    Layer *post_layer; //The postsynaptic layer
+
+    int *pre_location; //Location of presynaptic neuron in the presynaptic layer (different from the id)
+    int *post_location; //Location of presynaptic neuron in the presynaptic layer (different from the id)
+
     float *weight;
     float *gain;
     float *tau_syn; //questi parametri dovrebbero essere espressi in ms
     float *delay;
-    int num_synapses;
+
+    int n_synapses;
 };
 typedef struct Synapse Synapse;
 
 /**
- * @brief Create a synapses object.
+ * @brief Create a void synapses object.
  * 
- * @param num_synapses 
+ * @param n_synapses 
  * @return Synapse 
  */
-Synapse create_synapses(int num_synapses);
+Synapse create_synapses(int n_synapses);
 
 /**
  * @brief Connect two layers of neurons. The parameters of the synapse are set to default values:
@@ -42,7 +49,7 @@ Synapse create_synapses(int num_synapses);
  * @param conn_matrix // Matrix of connections between neurons of layer1 and layer2
  * @return Synapse 
  */
-Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix);
+Synapse connect(Layer *pre_layer, Layer *post_layer, int *conn_matrix);
 
 /**
  * @brief Set the pre locations object. This function is used to set the index of the presynaptic neuron,
@@ -51,7 +58,7 @@ Synapse connect(Neuron *layer1, Neuron *layer2, int *conn_matrix);
  * @param neurons 
  * @param synpase 
  */
-void set_pre_locations(Neuron neurons, Synapse synpase);
+void set_pre_locations(Layer pre_layer, Layer post_layer, Synapse synpase);
 
 /**
  * @brief Simulate the synapses (only one step).
@@ -61,17 +68,17 @@ void set_pre_locations(Neuron neurons, Synapse synpase);
  * @param step 
  * @param dt 
  */
-void simulate_synapses(Neuron *neurons, Synapse *synapses, int step, float dt);
+void  simulate_synapses(Layer *neurons, Synapse *synapses, int step, float dt);
 
 /**
  * @brief Create a network syn object. This function is used to create a synapse object that contains
  * the two synapses layers.
- * 
+ * @attention The final network of synapses must have neurons from a maximum of two distinct layers.
  * @param syn1 
  * @param syn2 
  * @return Synapse 
  */
-Synapse create_network_syn(Synapse syn1, Synapse syn2);
+Synapse combine_synapses(Synapse *syn1, Synapse *syn2);
 
 /**
  * @brief Free the memory allocated for the synapses.   
