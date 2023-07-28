@@ -16,33 +16,24 @@
 struct Liquid
 {
     float dt;
-    Layer *exc_neurons;
-    Layer *inh_neurons;
-    Layer *all_neurons;
+    int step;
 
-    Synapse *ee_synapses;
-    Synapse *ei_synapses;
-    Synapse *ii_synapses;
-    Synapse *ie_synapses;
-    Synapse *all_synapses;
+    Layer *neurons;
+    Synapse *synapses;
 };
 typedef struct Liquid Liquid;
 
 /**
- * @brief Connects two layers of neurons using the given parameters.
- * 
- * @param syn 
- * @param layer1 
- * @param layer2 
- * @param indegree // number of incoming connections per neuron in layer2
- * @param J 
- * @param dt 
+ * @brief Connects two layers of neurons.
+ * @param layer1 The pre-synaptic layer.
+ * @param layer2 The post-synaptic layer.
+ * @param indegree The number of incoming connections per neuron in layer2
+ * @param J The synaptic weight.
+ * @param dt The time step.
  */
 Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt);
 
 Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie);
-
-void simulate_liquid(Liquid *liquid, int steps);
 
 void free_liquid(Liquid *liquid);
 

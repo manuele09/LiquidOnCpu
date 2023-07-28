@@ -1,5 +1,34 @@
 #include "liquid.h"
 
+Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie)
+{
+    Liquid *liquid = (Liquid *)malloc(sizeof(Liquid));
+    liquid->dt = dt;
+    liquid->step = 0;
+
+    //create the neurons
+    Layer *exc_neurons = create_neurons(n_exc, true);
+    Layer *inh_neurons = create_neurons(n_inh, true);
+    initialize_neurons(liquid->neurons, 0, -1, -60, 6, 0.02, 0.2, -60, 2);
+
+    //create the synapses
+    Synapse *ee_synapses = connect_liquid(exc_neurons, exc_neurons, n_ee, 10 * 5, dt);
+    Synapse *ei_synapses = connect_liquid(exc_neurons, inh_neurons, n_ei, 10 * 25, dt);
+    Synapse *ii_synapses = connect_liquid(inh_neurons, inh_neurons, n_ii, 10 * (-20), dt);
+    Synapse *ie_synapses = connect_liquid(inh_neurons, exc_neurons, n_ie, 10 * (-20), dt);
+    
+    //combine the neurons and the synapses in two single objects
+    Layer *layers_array[] ={exc_neurons, inh_neurons};
+    liquid->neurons = combine_layers(layers_array, 2);
+    Synapse *synapses_array[] = {ee_synapses, ei_synapses, ii_synapses, ie_synapses};
+    liquid->synapses = combine_synapses(synapses_array, 4);
+
+    //set the location of the neurons in the synapses
+    set_neurons_location(liquid->neurons, liquid->synapses);
+
+    return liquid;
+}
+
 Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt)
 {
     Synapse *syn = create_synapses(layer2->n_neurons * indegree, true);
@@ -34,67 +63,9 @@ Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, fl
     return syn;
 }
 
-Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie)
-{
-    Liquid *liquid = (Liquid *)malloc(sizeof(Liquid));
-    liquid->dt = dt;
-
-    liquid->exc_neurons = create_neurons(n_exc, true);
-    liquid->inh_neurons = create_neurons(n_inh, true);
-
-    Layer *layers[2] ={liquid->exc_neurons, liquid->inh_neurons};
-    liquid->all_neurons = combine_layers(layers, 2);
-
-    for (int i = 0; i < liquid->all_neurons->n_neurons; i++)
-    {
-        liquid->all_neurons->I_bias[i] = 0; // 32
-        liquid->all_neurons->a[i] = 0.02;
-        liquid->all_neurons->b[i] = 0.2;
-        liquid->all_neurons->c[i] = -60;
-        liquid->all_neurons->d[i] = 2;
-        liquid->all_neurons->V[i] = -60;
-        liquid->all_neurons->U[i] = 6;
-    }
-
-    liquid->ee_synapses = connect_liquid(liquid->exc_neurons, liquid->exc_neurons, n_ee, 10 * 5, dt);
-    liquid->ei_synapses = connect_liquid(liquid->exc_neurons, liquid->inh_neurons, n_ei, 10 * 25, dt);
-
-    liquid->ii_synapses = connect_liquid(liquid->inh_neurons, liquid->inh_neurons, n_ii, 10 * (-20), dt);
-    liquid->ie_synapses = connect_liquid(liquid->inh_neurons, liquid->exc_neurons, n_ie, 10 * (-20), dt);
-
-    
-    
-    Synapse *synapses[] = {liquid->ee_synapses, liquid->ei_synapses, liquid->ii_synapses, liquid->ie_synapses};
-    liquid->all_synapses = combine_synapses(synapses, 4);
-
-    set_neurons_location(liquid->all_neurons, liquid->all_synapses);
-
-
-    return liquid;
-}
-
-void simulate_liquid(Liquid *liquid, int steps)
-{
-    NeuronLogger *logger = create_neuron_logger(liquid->all_neurons->n_neurons, steps);
-    for (int s = 0; s < steps; s++)
-    {
-        simulate_neurons(liquid->all_neurons, liquid->dt, logger);
-        simulate_synapses(liquid->all_synapses, liquid->dt);
-    }
-
-    writeNeuronLogger("logs/liquid_neurons.txt", logger);
-    free_neuron_logger(logger);
-}
 
 void free_liquid(Liquid *liquid)
 {
-    free_neurons(liquid->all_neurons);
-    free_neurons(liquid->exc_neurons);
-    free_neurons(liquid->inh_neurons);
-
-    free_synapses(liquid->all_synapses);
-    free_synapses(liquid->ee_synapses);
-    free_synapses(liquid->ei_synapses);
-    free_synapses(liquid->ii_synapses);
-    free_synapses(liquid->ie_synapses);
+    free_neurons(liquid->neurons);
+    free_synapses(liquid->synapses);
 }
