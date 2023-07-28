@@ -4,7 +4,7 @@
 #include <time.h>
 #include "test_gaussian.h"
 
-int main() {
+int mainc() {
 
     TestGaussian(1, 100, 500000);
     // TestGaussianClipped(0, 1, -3, 3, 500000);

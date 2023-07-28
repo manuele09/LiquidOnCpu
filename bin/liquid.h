@@ -28,13 +28,16 @@ typedef struct Liquid Liquid;
  * @param layer1 The pre-synaptic layer.
  * @param layer2 The post-synaptic layer.
  * @param indegree The number of incoming connections per neuron in layer2
- * @param J The synaptic weight.
+ * @param J Used to set the weight of the synapses. 
+ * If J >= 0, the weight is sampled from a Gaussian distribution with mean J and standard deviation 0.7 * J. 
+ * If J < 0, the weight is sampled from a Gaussian distribution with mean J and standard deviation 0.7 * (-J).
  * @param dt The time step.
  */
-Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt);
+Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, float dt);
 
 Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie);
 
 void free_liquid(Liquid *liquid);
 
 #endif
+

@@ -29,11 +29,12 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_
     return liquid;
 }
 
-Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, double J, float dt)
+//cambiare dt delay
+Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, float dt)
 {
     Synapse *syn = create_synapses(layer2->n_neurons * indegree, true);
-    double delay = GaussianDistributionClipped(10, 20, 3, 200);
-    double w, tau;
+    float delay = GaussianDistributionClipped(10, 20, 3, 200); 
+    float w, tau;
     if (J >= 0)
     {
         w = GaussianDistributionClipped(J, 0.7 * J, 0, 100000);
