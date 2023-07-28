@@ -91,7 +91,7 @@ void freeIrisDataset(float **input_matrix, int **label_matrix, int num_samples)
     free(label_matrix);
 }
 
-int main()
+int maind()
 {
 
     float **input_matrix;
@@ -101,7 +101,7 @@ int main()
     int test_samples;
     int n_in = 4;
     int n_out = 3;
-    int n_epochs = 10;
+    int n_epochs = 1;
 
     // Read the Iris dataset from file into input matrix and label matrix
     readIrisDataset("../datasets/iris/iris.data", &input_matrix, &label_matrix, &num_samples);
@@ -123,7 +123,7 @@ int main()
         LogisticRegression_predict(&classifier, input_matrix[i + train_samples], test_Y[i]);
         for (int j = 0; j < n_out; j++)
         {
-            printf("%f ", test_Y[i][j]);
+            printf("%f (%d); ", test_Y[i][j], label_matrix[i + train_samples][j]);
         }
         printf("\n");
     }
