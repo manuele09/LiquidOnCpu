@@ -6,7 +6,7 @@
 #include "synapse.h"
 #include "visualize.h"
 
-int main()
+int mainb()
 {
     //create the neurons
     Layer *layer1 = create_neurons(10, true);
