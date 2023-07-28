@@ -12,11 +12,11 @@ void LogisticRegression__construct(LogisticRegression *this, int N, int n_in, in
   this->n_in = n_in;
   this->n_out = n_out;
 
-  this->W = (double **)malloc(sizeof(double *) * n_out);
-  this->W[0] = (double *)malloc(sizeof(double) * n_in * n_out);
+  this->W = (float **)malloc(sizeof(float *) * n_out);
+  this->W[0] = (float *)malloc(sizeof(float) * n_in * n_out);
   for (i = 0; i < n_out; i++)
     this->W[i] = this->W[0] + i * n_in;
-  this->b = (double *)malloc(sizeof(double) * n_out);
+  this->b = (float *)malloc(sizeof(float) * n_out);
 
   for (i = 0; i < n_out; i++)
   {
@@ -33,11 +33,11 @@ void LogisticRegression__destruct(LogisticRegression *this)
   free(this->b);
 }
 
-void LogisticRegression_train(LogisticRegression *this, int *x, int *y, double lr)
+void LogisticRegression_train(LogisticRegression *this, float *x, int *y, float lr)
 {
   int i, j;
-  double *p_y_given_x = (double *)malloc(sizeof(double) * this->n_out); //will contain the prediction given x
-  double *dy = (double *)malloc(sizeof(double) * this->n_out); //will contain the error between the prediction and the true label
+  float *p_y_given_x = (float *)malloc(sizeof(float) * this->n_out); //will contain the prediction given x
+  float *dy = (float *)malloc(sizeof(float) * this->n_out); //will contain the error between the prediction and the true label
 
   // Find the prediction for each output-classes
   //Is the same of calling LogisticRegression_predict
@@ -67,11 +67,11 @@ void LogisticRegression_train(LogisticRegression *this, int *x, int *y, double l
   free(dy);
 }
 
-void LogisticRegression_softmax(LogisticRegression *this, double *x)
+void LogisticRegression_softmax(LogisticRegression *this, float *x)
 {
   int i;
-  double max = 0.0;
-  double sum = 0.0;
+  float max = 0.0;
+  float sum = 0.0;
 
   //Find the max value
   for (i = 0; i < this->n_out; i++)
@@ -88,7 +88,7 @@ void LogisticRegression_softmax(LogisticRegression *this, double *x)
     x[i] /= sum;
 }
 
-void LogisticRegression_predict(LogisticRegression *this, int *x, double *y)
+void LogisticRegression_predict(LogisticRegression *this, float *x, float *y)
 {
   int i, j;
 
@@ -111,7 +111,7 @@ void test_lr(void)
 {
   int i, j, epoch;
 
-  double learning_rate = 0.1;
+  float learning_rate = 0.1;
   int n_epochs = 500;
 
   int train_N = 6;
@@ -155,7 +155,7 @@ void test_lr(void)
       {1, 0, 1, 0, 0, 0},
       {0, 0, 1, 1, 1, 0}};
 
-  double test_Y[2][2];
+  float test_Y[2][2];
 
   // test
   for (i = 0; i < test_N; i++)
@@ -172,9 +172,3 @@ void test_lr(void)
   LogisticRegression__destruct(&classifier);
 }
 
-int main(void)
-{
-  test_lr();
-
-  return 0;
-}

@@ -5,8 +5,8 @@ typedef struct {
   int N; //Number of samples, is mandatory to only if you are doing training.
   int n_in; //Input dimension 
   int n_out; //Output dimension (number of classes) 
-  double **W; //Matrix of weights (n_out x n_in)
-  double *b; //Vector of biases (n_out)
+  float **W; //Matrix of weights (n_out x n_in)
+  float *b; //Vector of biases (n_out)
 } LogisticRegression;
 
 /**
@@ -34,7 +34,7 @@ void LogisticRegression__destruct(LogisticRegression *this);
  * @param y The output vector (n_out elements), that contains the true labels.
  * @param lr The learning rate.
  */
-void LogisticRegression_train(LogisticRegression *this, int *x, int *y, double lr);
+void LogisticRegression_train(LogisticRegression *this, float *x, int *y, float lr);
 
 /**
  * @brief Computes the softmax of the input vector.
@@ -45,7 +45,7 @@ void LogisticRegression_train(LogisticRegression *this, int *x, int *y, double l
  * must be of size n_out. Each entry usually is the dot product between the
  * weights of the Logistic Regression model and the input vector.
  */
-void LogisticRegression_softmax(LogisticRegression *this, double *x);
+void LogisticRegression_softmax(LogisticRegression *this, float *x);
 
 /**
  * @brief Predicts the output of the Logistic Regression model.
@@ -54,6 +54,13 @@ void LogisticRegression_softmax(LogisticRegression *this, double *x);
  * @param x The input vector, of size n_in.
  * @param y The output vector, of size n_out, where the result will be stored.
  */
-void LogisticRegression_predict(LogisticRegression *this, int *x, double *y);
+void LogisticRegression_predict(LogisticRegression *this, float *x, float *y);
+
+/**
+ * @brief Tests the Logistic Regression model. The code contains
+ * a simple example of Logistic Regression.
+ * 
+ */
+void test_lr(void);
 
 #endif
