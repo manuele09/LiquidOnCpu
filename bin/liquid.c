@@ -1,12 +1,15 @@
 #include "liquid.h"
 
-Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_ii, int n_ie)
+Liquid *create_liquid(float dt, int n_exc, int n_inh, float n_rec, int n_ee, int n_ei, int n_ii, int n_ie)
 {
     Liquid *liquid = (Liquid *)malloc(sizeof(Liquid));
     liquid->dt = dt;
     liquid->step = 0;
+
     liquid->n_exc = n_exc;
     liquid->n_inh = n_inh;
+
+    liquid->n_rec = n_rec * n_exc;
 
     // create the neurons
     Layer *exc_neurons = create_neurons(n_exc, true);
@@ -30,6 +33,22 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_
     set_neurons_location(liquid->neurons, liquid->synapses);
 
     return liquid;
+}
+
+void create_input_layer(Liquid *liquid, int input_size, float input_outdegree)
+{
+    liquid->input_size = input_size;
+    liquid->input_outdegree = input_outdegree * liquid->n_exc;
+
+    init_connettivity(liquid);
+}
+
+void init_connettivity(Liquid *liquid)
+{
+    liquid->connectivity = (int *)calloc(liquid->input_size * liquid->input_outdegree, sizeof(int));
+    for (int i = 0; i < liquid->input_size; i++)
+        for (int j = 0; j < liquid->input_outdegree; j++)
+            liquid->connectivity[i * liquid->input_outdegree + j] = rand() % liquid->n_exc;
 }
 
 Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, float dt)
@@ -66,11 +85,12 @@ Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, flo
     return syn;
 }
 
-void set_input(Liquid *liquid, int *input, int input_size, int outdegree)
+void set_input(Liquid *liquid, float *input)
 {
-    for (int i = 0; i < input_size; i++)
-        for (int j = 0; j < outdegree; j++)
-            liquid->neurons->I_bias[rand() % liquid->neurons->n_neurons] += input[i];
+    for (int i = 0; i < liquid->input_size; i++)
+        for (int j = 0; j < liquid->input_outdegree; j++)
+            liquid->neurons->I_bias[liquid->connectivity[i * liquid->input_outdegree + j]] += input[i];
+
 }
 
 void clear_input(Liquid *liquid)

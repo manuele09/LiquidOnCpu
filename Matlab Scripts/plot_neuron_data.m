@@ -41,7 +41,7 @@ function plot_neuron_data(log_file, neuron_ids, plot_type)
         if strcmp(plot_type, 'c') || strcmp(plot_type, 'both')
             % Create a subplot for input current
             subplot(num_neurons, num_columns, sub_plot_pos);
-            plot(steps, neuron_data.I);
+            plot(steps, neuron_data.I + neuron_data.I_Bias);
             title(sprintf('Neuron %d - Input Current', neuron_id));
             xlabel('Step');
             ylabel('Current (pA)');
