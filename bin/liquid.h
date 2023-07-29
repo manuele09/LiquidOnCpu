@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
+
 #include "neuron.h"
 #include "synapse.h"
 #include "state_logger.h"
@@ -17,6 +19,10 @@ struct Liquid
 {
     float dt;
     int step;
+
+    int n_exc;
+    int n_inh;
+    int n_rec;
 
     Layer *neurons;
     Synapse *synapses;

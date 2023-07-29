@@ -120,7 +120,7 @@ void test_lr(void)
   int n_out = 2;
 
   // training data
-  int train_X[6][6] = {
+  float train_X[6][6] = {
       {1, 1, 1, 0, 0, 0},
       {1, 0, 1, 0, 0, 0},
       {1, 1, 1, 0, 0, 0},
@@ -151,7 +151,7 @@ void test_lr(void)
   }
 
   // test data
-  int test_X[2][6] = {
+  float test_X[2][6] = {
       {1, 0, 1, 0, 0, 0},
       {0, 0, 1, 1, 1, 0}};
 

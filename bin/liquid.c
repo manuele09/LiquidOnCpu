@@ -5,6 +5,8 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, int n_ee, int n_ei, int n_
     Liquid *liquid = (Liquid *)malloc(sizeof(Liquid));
     liquid->dt = dt;
     liquid->step = 0;
+    liquid->n_exc = n_exc;
+    liquid->n_inh = n_inh;
 
     // create the neurons
     Layer *exc_neurons = create_neurons(n_exc, true);
@@ -62,6 +64,27 @@ Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, flo
         }
     }
     return syn;
+}
+
+void set_input(Liquid *liquid, int *input, int input_size, int outdegree)
+{
+    for (int i = 0; i < input_size; i++)
+        for (int j = 0; j < outdegree; j++)
+            liquid->neurons->I_bias[rand() % liquid->neurons->n_neurons] += input[i];
+}
+
+void clear_input(Liquid *liquid)
+{
+    for (int i = 0; i < liquid->neurons->n_neurons; i++)
+        liquid->neurons->I_bias[i] = 0;
+}
+
+float *read_output(Liquid *liquid, float tau)
+{
+    float *output = (float *)calloc(liquid->n_exc, sizeof(float));
+    for (int i = 0; i < liquid->n_exc; i++)
+        output[i] = exp((liquid->neurons->last_spike[i] - liquid->neurons->step) * liquid->dt / tau);
+    return output;
 }
 
 void free_liquid(Liquid *liquid)
