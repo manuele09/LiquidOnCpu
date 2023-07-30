@@ -1,5 +1,5 @@
 #include "neuron.h"
-
+//Modifica: permettere di inserire manualmente l'id del layer
 Layer *create_neurons(size_t num_neurons, bool new_neurons_ids)
 {
     static int global_id = 0;

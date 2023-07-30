@@ -85,12 +85,18 @@ Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, flo
     return syn;
 }
 
-void set_input(Liquid *liquid, float *input)
+void set_input(Liquid *liquid, float *input, float gain)
 {
     for (int i = 0; i < liquid->input_size; i++)
-        for (int j = 0; j < liquid->input_outdegree; j++)
-            liquid->neurons->I_bias[liquid->connectivity[i * liquid->input_outdegree + j]] += input[i];
+    {
 
+        // printf("%d) %f\n", i, gain * input[i]);
+        for (int j = 0; j < liquid->input_outdegree; j++)
+        {
+            liquid->neurons->I_bias[liquid->connectivity[i * liquid->input_outdegree + j]] += gain * input[i];
+        }
+        // printf("\n");
+    }
 }
 
 void clear_input(Liquid *liquid)
@@ -99,12 +105,15 @@ void clear_input(Liquid *liquid)
         liquid->neurons->I_bias[i] = 0;
 }
 
-float *read_output(Liquid *liquid, float tau)
+void read_output(Liquid *liquid, float *output, float tau)
 {
-    float *output = (float *)calloc(liquid->n_exc, sizeof(float));
     for (int i = 0; i < liquid->n_exc; i++)
         output[i] = exp((liquid->neurons->last_spike[i] - liquid->neurons->step) * liquid->dt / tau);
-    return output;
+}
+
+void simulate_liquid(Liquid *liquid, float *input, float *output, int epochs)
+{
+    
 }
 
 void free_liquid(Liquid *liquid)

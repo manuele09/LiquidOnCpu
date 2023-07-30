@@ -21,6 +21,8 @@ NeuronLogger *create_neuron_logger(size_t n_neurons, size_t steps)
 
 void writeNeuronLogger(char *file_name, NeuronLogger *logger)
 {
+    if (logger == NULL)
+        return;
     FILE *fp = fopen(file_name, "w");
     if (fp == NULL)
     {
@@ -29,7 +31,9 @@ void writeNeuronLogger(char *file_name, NeuronLogger *logger)
     }
     fprintf(fp, "Step  Layer_ID Id  V  I  I_Bias\n");
     for (int i = 0; i < logger->counter; i++)
+    {
         fprintf(fp, "%d  %d %d  %f  %f  %f\n", logger->step[i], logger->layer_id[i], logger->id[i], logger->V[i], logger->I[i], logger->I_bias[i]);
+    }
     fclose(fp);
     free(logger);
 }

@@ -50,7 +50,7 @@ Liquid *create_liquid(float dt, int n_exc, int n_inh, float n_rec, int n_ee, int
 
 void create_input_layer(Liquid *liquid, int input_size, float input_outdegree);
 
-void set_input(Liquid *liquid, float *input);
+void set_input(Liquid *liquid, float *input, float gain);
 
 Synapse *connect_liquid(Layer *layer1, Layer *layer2, int indegree, float J, float dt);
 
@@ -58,7 +58,7 @@ void init_connettivity(Liquid *liquid);
 
 void clear_input(Liquid *liquid);
 
-float *read_output(Liquid *liquid, float tau);
+void read_output(Liquid *liquid, float *output, float tau);
 
 void free_liquid(Liquid *liquid);
 

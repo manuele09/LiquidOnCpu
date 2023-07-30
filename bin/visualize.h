@@ -10,5 +10,6 @@ void visualize_synapse(Synapse *syn);
 
 void print_matrix(int *matrix, int x, int y);
 
+void print_matrix_float(float *matrix, int x, int y);
 
 #endif

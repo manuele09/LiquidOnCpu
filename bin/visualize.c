@@ -51,3 +51,15 @@ void print_matrix(int *matrix, int x, int y)
     }
     printf("\n");
 }
+
+void print_matrix_float(float *matrix, int x, int y)
+{
+    printf("Matrice  delle connessioni:\n");
+    for (int i = 0; i < x; i++)
+    {
+        for (int j = 0; j < y; j++)
+            printf("%.2f ", matrix[i * y + j]);
+        printf("\n");
+    }
+    printf("\n");
+}
